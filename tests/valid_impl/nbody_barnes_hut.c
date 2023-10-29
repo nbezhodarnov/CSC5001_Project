@@ -255,3 +255,9 @@ void insert_all_particles_valid(int nparticles, particle_t *particles, node_t *r
     insert_particle(&particles[i], root);
   }
 }
+
+void finalize_valid()
+{
+  free(particles_valid);
+  free_node(root_valid);
+}

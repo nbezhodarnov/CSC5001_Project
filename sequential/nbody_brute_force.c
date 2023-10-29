@@ -149,3 +149,8 @@ void run_simulation()
 #endif
   }
 }
+
+void finalize()
+{
+  free(particles);
+}

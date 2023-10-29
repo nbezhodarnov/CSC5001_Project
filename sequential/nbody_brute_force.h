@@ -46,4 +46,6 @@ void dump_particles(FILE *f);
 
 void run_simulation();
 
+void finalize();
+
 #endif

@@ -29,11 +29,8 @@ void setup(void)
 
 void teardown(void)
 {
-    free(particles);
-    free(particles_valid);
-
-    free_node(root);
-    free_node(root_valid);
+    finalize();
+    finalize_valid();
 }
 
 #define ck_assert_double_eq_tolerant(X, Y) ck_assert_double_eq_tol(X, Y, 1e-6)

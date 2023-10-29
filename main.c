@@ -68,5 +68,8 @@ int main(int argc, char **argv)
   /* Close the X window used to display the particles */
   close_display();
 #endif
+
+  finalize();
+
   return 0;
 }

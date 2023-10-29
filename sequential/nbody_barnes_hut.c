@@ -283,3 +283,9 @@ void insert_all_particles(int nparticles, particle_t *particles, node_t *root)
     insert_particle(&particles[i], root);
   }
 }
+
+void finalize()
+{
+  free(particles);
+  free_node(root);
+}

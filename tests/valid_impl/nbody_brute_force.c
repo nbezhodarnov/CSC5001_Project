@@ -122,3 +122,8 @@ void run_simulation_valid()
     dt = 0.1 * max_speed_valid / max_acc_valid;
   }
 }
+
+void finalize_valid()
+{
+  free(particles_valid);
+}

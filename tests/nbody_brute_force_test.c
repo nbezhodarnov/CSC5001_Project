@@ -17,11 +17,12 @@ bool display_enabled = false;
 
 void setup(void)
 {
-    nparticles = 10;
-    T_FINAL = 3;
+    // First argument is unused, second is nparticles, third is T_FINAL
+    int argc = 3;
+    char *argv[] = {"nbody_brute_force_test", "10", "3"};
 
-    init();
-    init_valid();
+    init(argc, argv);
+    init_valid(argc, argv);
 }
 
 void teardown(void)

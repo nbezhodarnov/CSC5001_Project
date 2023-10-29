@@ -31,8 +31,10 @@ node_t *root_valid;
 
 void insert_all_particles_valid(int nparticles, particle_t *particles, node_t *root);
 
-void init_valid()
+void init_valid(int argc, char **argv)
 {
+  parse_args(argc, argv);
+
   init_alloc(8 * nparticles);
   root_valid = malloc(sizeof(node_t));
   init_node(root_valid, NULL, XMIN, XMAX, YMIN, YMAX);

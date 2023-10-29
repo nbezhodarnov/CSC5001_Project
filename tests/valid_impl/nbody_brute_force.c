@@ -27,8 +27,10 @@ double sum_speed_sq_valid = 0;
 double max_acc_valid = 0;
 double max_speed_valid = 0;
 
-void init_valid()
+void init_valid(int argc, char **argv)
 {
+  parse_args(argc, argv);
+
   /* Allocate global shared arrays for the particles data set. */
   particles_valid = malloc(sizeof(particle_t) * nparticles);
   all_init_particles(nparticles, particles_valid);

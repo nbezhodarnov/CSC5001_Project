@@ -13,7 +13,7 @@
 extern int nparticles; /* number of particles */
 extern float T_FINAL; /* simulation end time */
 
-void init();
+void init(int argc, char **argv);
 
 #if DISPLAY
 void draw_particles();

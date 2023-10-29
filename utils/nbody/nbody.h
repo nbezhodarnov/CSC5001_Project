@@ -33,6 +33,7 @@ typedef struct node
 } node_t;
 
 extern int nparticles; /* number of particles to simulate */
+extern float T_FINAL; /* simulation end time */
 
 /* used for debugging the display of the Barnes-Hut application */
 #define DRAW_BOXES 1

@@ -25,16 +25,7 @@ bool display_enabled = true;
 */
 int main(int argc, char **argv)
 {
-  if (argc >= 2)
-  {
-    nparticles = atoi(argv[1]);
-  }
-  if (argc == 3)
-  {
-    T_FINAL = atof(argv[2]);
-  }
-
-  init();
+  init(argc, argv);
 
   /* Initialize thread data structures */
 #ifdef DISPLAY

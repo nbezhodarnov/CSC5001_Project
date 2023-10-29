@@ -18,7 +18,7 @@ extern double sum_speed_sq_valid;
 extern double max_acc_valid;
 extern double max_speed_valid;
 
-void init_valid();
+void init_valid(int argc, char **argv);
 
 /* compute the force that a particle with position (x_pos, y_pos) and mass 'mass'
  * applies to particle p

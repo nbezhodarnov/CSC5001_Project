@@ -17,16 +17,14 @@
 
 bool display_enabled = false;
 
-/* Using these functions for each unit test leads to assertion in the second test.
-   The reason for it is unknown.
- */
 void setup(void)
 {
-    nparticles = 10;
-    T_FINAL = 3;
+    // First argument is unused, second is nparticles, third is T_FINAL
+    int argc = 3;
+    char *argv[] = {"nbody_barnes_hut_test", "10", "3"};
 
-    init();
-    init_valid();
+    init(argc, argv);
+    init_valid(argc, argv);
 }
 
 void teardown(void)

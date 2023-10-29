@@ -34,8 +34,10 @@ extern bool display_enabled;
 
 void insert_all_particles(int nparticles, particle_t *particles, node_t *root);
 
-void init()
+void init(int argc, char **argv)
 {
+  parse_args(argc, argv);
+
   init_alloc(8 * nparticles);
   root = malloc(sizeof(node_t));
   init_node(root, NULL, XMIN, XMAX, YMIN, YMAX);

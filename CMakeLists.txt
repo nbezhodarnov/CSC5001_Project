@@ -25,14 +25,14 @@ file(GLOB_RECURSE UI_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/ui/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/utils/ui/*.h)
 
-# BRUTE FORCE SOURCES
-set(NBODY_BRUTE_FORCE_SOURCE_FILES
+# SEQUENTIAL BRUTE FORCE SOURCES
+set(SEQUENTIAL_BRUTE_FORCE_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/sequential/nbody_brute_force.c
         ${CMAKE_CURRENT_SOURCE_DIR}/sequential/nbody_brute_force.h
     )
 
-# BARNES HUT SOURCES
-set(NBODY_BARNES_HUT_SOURCE_FILES
+# SEQUENTIAL BARNES HUT SOURCES
+set(SEQUENTIAL_BARNES_HUT_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/sequential/nbody_barnes_hut.c
         ${CMAKE_CURRENT_SOURCE_DIR}/sequential/nbody_barnes_hut.h
     )
@@ -62,22 +62,22 @@ if (DISPLAY)
 endif ()
 
 
-# CONFIGURE AND BUILD BRUTE FORCE VERSION
-add_library(nbody_brute_force_lib STATIC ${COMMON_SOURCE_FILES} ${NBODY_BRUTE_FORCE_SOURCE_FILES})
+# CONFIGURE AND BUILD SEQUENTIAL BRUTE FORCE VERSION
+add_library(nbody_seq_brute_force_lib STATIC ${COMMON_SOURCE_FILES} ${SEQUENTIAL_BRUTE_FORCE_SOURCE_FILES})
 
-target_include_directories(nbody_brute_force_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(nbody_brute_force_lib ${DEPENDS_LIBS})
+target_include_directories(nbody_seq_brute_force_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(nbody_seq_brute_force_lib ${DEPENDS_LIBS})
 
-add_executable(nbody_brute_force ${MAIN_SOURCE_FILES})
-target_link_libraries(nbody_brute_force nbody_brute_force_lib)
-set_target_properties(nbody_brute_force PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+add_executable(nbody_seq_brute_force ${MAIN_SOURCE_FILES})
+target_link_libraries(nbody_seq_brute_force nbody_seq_brute_force_lib)
+set_target_properties(nbody_seq_brute_force PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-# CONFIGURE AND BUILD BARNES HUT VERSION
-add_library(nbody_barnes_hut_lib STATIC ${COMMON_SOURCE_FILES} ${NBODY_BARNES_HUT_SOURCE_FILES})
+# CONFIGURE AND BUILD SEQUENTIAL BARNES HUT VERSION
+add_library(nbody_seq_barnes_hut_lib STATIC ${COMMON_SOURCE_FILES} ${SEQUENTIAL_BARNES_HUT_SOURCE_FILES})
 
-target_include_directories(nbody_barnes_hut_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(nbody_barnes_hut_lib ${DEPENDS_LIBS})
+target_include_directories(nbody_seq_barnes_hut_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(nbody_seq_barnes_hut_lib ${DEPENDS_LIBS})
 
-add_executable(nbody_barnes_hut ${MAIN_SOURCE_FILES})
-target_link_libraries(nbody_barnes_hut nbody_barnes_hut_lib)
-set_target_properties(nbody_barnes_hut PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+add_executable(nbody_seq_barnes_hut ${MAIN_SOURCE_FILES})
+target_link_libraries(nbody_seq_barnes_hut nbody_seq_barnes_hut_lib)
+set_target_properties(nbody_seq_barnes_hut PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)

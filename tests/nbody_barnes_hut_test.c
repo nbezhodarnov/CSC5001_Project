@@ -3,6 +3,8 @@
 #include "valid_impl/nbody_barnes_hut.h"
 #include "sequential/nbody_barnes_hut.h"
 
+#include "utils/nbody/nbody_tools.h"
+
 #include <check.h>
 
 #include <stdio.h>
@@ -31,6 +33,9 @@ void teardown(void)
 {
     free(particles);
     free(particles_valid);
+
+    free_node(root);
+    free_node(root_valid);
 }
 
 #define ck_assert_double_eq_tolerant(X, Y) ck_assert_double_eq_tol(X, Y, 1e-6)

@@ -7,3 +7,4 @@ nbody_barnes_hut_test
 nbody_barnes_hut
 nbody_brute_force_test
 nbody_brute_force
+build/

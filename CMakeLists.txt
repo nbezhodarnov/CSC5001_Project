@@ -13,7 +13,7 @@ set(DEPENDS_LIBS
 )
 
 set(DUMP_RESULT FALSE CACHE BOOL "Dump the results of the simulation")
-set(DISPLAY TRUE CACHE BOOL "Display the results of the simulation")
+set(DISPLAY FALSE CACHE BOOL "Display the results of the simulation")
 
 # COMMON SOURCES
 file(GLOB_RECURSE COMMON_SOURCE_FILES 

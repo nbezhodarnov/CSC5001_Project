@@ -1,13 +1,10 @@
 .vscode
 .devcontainer
 
-*.log
-
 *.o
 *.a
 nbody_barnes_hut_test
 nbody_barnes_hut
-nbody_barnes_hut_mpi
 nbody_brute_force_test
 nbody_brute_force
-nbody_brute_force_mpi
+build/

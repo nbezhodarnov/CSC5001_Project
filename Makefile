@@ -1,10 +1,10 @@
 CC	= gcc
-CFLAGS	= -O0 -g -Wall -I.
+CFLAGS	= -O0 -g -Wall -I. -I/usr/include/x86_64-linux-gnu/mpich
 LDFLAGS = -L. -lm -lpthread -lnbody -lcheck -lsubunit -fopenmp
 INTERNAL_LIBS = libnbody.a
 VERBOSE	=
 
-TARGET	= nbody_brute_force nbody_barnes_hut
+TARGET	= nbody_brute_force nbody_barnes_hut nbody_brute_force_mpi nbody_barnes_hut_mpi
 TESTS_TARGET = nbody_brute_force_test nbody_barnes_hut_test
 
 NBODY_OBJECTS = utils/nbody/nbody_tools.o utils/nbody/nbody_alloc.o
@@ -44,6 +44,12 @@ nbody_brute_force: sequential/nbody_brute_force.o main.o $(INTERNAL_LIBS)
 
 nbody_barnes_hut: sequential/nbody_barnes_hut.o main.o $(INTERNAL_LIBS)
 	$(CC) $(VERBOSE) -o $@ main.o $< $(LDFLAGS)
+
+nbody_brute_force_mpi: mpi/nbody_brute_force.o main.o $(INTERNAL_LIBS)
+	$(CC) $(VERBOSE) -o $@ main.o $< $(LDFLAGS) -lmpich
+
+nbody_barnes_hut_mpi: mpi/nbody_barnes_hut.o main.o $(INTERNAL_LIBS)
+	$(CC) $(VERBOSE) -o $@ main.o $< $(LDFLAGS) -lmpich
 
 libnbody.a: $(NBODY_OBJECTS)
 	ar rcs libnbody.a $(NBODY_OBJECTS)

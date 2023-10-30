@@ -8,8 +8,6 @@ set(CMAKE_C_FLAGS "-Wall -fopenmp")
 set(DEPENDS_LIBS
     m
     pthread
-    check
-    subunit
 )
 
 set(DUMP_RESULT FALSE CACHE BOOL "Dump the results of the simulation")
@@ -111,6 +109,11 @@ set(BARNES_HUT_TESTS_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/valid_impl/nbody_barnes_hut.h
     )
 
+set(TEST_DEPENDS_LIBS
+        check
+        subunit
+    )
+
 set(TEST_PARAMETERS
         10 # number of particles
         3 # total simulation time
@@ -128,7 +131,7 @@ target_link_libraries(nbody_valid_brute_force_lib ${DEPENDS_LIBS})
 
 foreach(impl ${IMPLEMENTATIONS_TO_TEST})
     add_executable(nbody_${impl}_brute_force_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
-    target_link_libraries(nbody_${impl}_brute_force_test nbody_${impl}_brute_force_lib nbody_valid_brute_force_lib)
+    target_link_libraries(nbody_${impl}_brute_force_test nbody_${impl}_brute_force_lib nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
     set_target_properties(nbody_${impl}_brute_force_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
     add_test(NAME nbody_${impl}_brute_force_test COMMAND bin/nbody_${impl}_brute_force_test ${TEST_PARAMETERS})
 endforeach()
@@ -141,7 +144,7 @@ target_link_libraries(nbody_valid_barnes_hut_lib ${DEPENDS_LIBS})
 
 foreach(impl ${IMPLEMENTATIONS_TO_TEST})
     add_executable(nbody_${impl}_barnes_hut_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
-    target_link_libraries(nbody_${impl}_barnes_hut_test nbody_${impl}_barnes_hut_lib nbody_valid_barnes_hut_lib)
+    target_link_libraries(nbody_${impl}_barnes_hut_test nbody_${impl}_barnes_hut_lib nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
     set_target_properties(nbody_${impl}_barnes_hut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
     add_test(NAME nbody_${impl}_barnes_hut_test COMMAND bin/nbody_${impl}_barnes_hut_test ${TEST_PARAMETERS})
 endforeach()

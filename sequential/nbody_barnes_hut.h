@@ -20,6 +20,8 @@ extern double max_speed;
 
 extern node_t *root;
 
+void init_tools(int argc, char **argv);
+
 void init(int argc, char **argv);
 
 /* compute the force that a particle with position (x_pos, y_pos) and mass 'mass'

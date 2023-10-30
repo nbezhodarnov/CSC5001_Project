@@ -114,9 +114,14 @@ void init_local_variables(int rank, int size)
   displs[size - 1] = (size - 1) * nparticles_per_node;
 }
 
-void init(int argc, char **argv)
+void init_tools(int argc, char **argv)
 {
   init_MPI(argc, argv);
+}
+
+void init(int argc, char **argv)
+{
+  init_tools(argc, argv);
 
   parse_args(argc, argv);
 

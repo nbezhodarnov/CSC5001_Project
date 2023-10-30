@@ -32,6 +32,11 @@ node_t *root;
 
 extern bool display_enabled;
 
+void init_tools(int argc, char **argv)
+{
+  // Nothing to do
+}
+
 void insert_all_particles(int nparticles, particle_t *particles, node_t *root);
 
 void init(int argc, char **argv)

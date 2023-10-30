@@ -30,6 +30,11 @@ double max_speed = 0;
 
 extern bool display_enabled;
 
+void init_tools(int argc, char **argv)
+{
+  // Nothing to do
+}
+
 void init(int argc, char **argv)
 {
   parse_args(argc, argv);

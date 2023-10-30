@@ -123,8 +123,10 @@ Suite *nbody_suite(void)
     return s;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
+    init_tools(argc, argv);
+
     double number_failed;
     Suite *s;
     SRunner *sr;

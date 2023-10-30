@@ -63,6 +63,8 @@ void insert_all_particles(int nparticles, particle_t *particles, node_t *root);
 
 void free_memory();
 
+void finalize_tools();
+
 void finalize();
 
 #endif

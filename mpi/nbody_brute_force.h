@@ -51,6 +51,8 @@ void run_simulation();
 
 void free_memory();
 
+void finalize_tools();
+
 void finalize();
 
 #endif

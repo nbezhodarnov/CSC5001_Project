@@ -77,8 +77,6 @@ void init_MPI(int argc, char **argv)
 
   MPI_Init(&argc, &argv);
 
-  atexit(finalize_MPI);
-
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -290,9 +288,14 @@ void free_memory()
   free(displs);
 }
 
-void finalize()
+void finalize_tools()
 {
   finalize_MPI();
+}
+
+void finalize()
+{
+  finalize_tools();
 
   free_memory();
 }

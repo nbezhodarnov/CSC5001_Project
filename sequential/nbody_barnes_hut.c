@@ -295,6 +295,11 @@ void free_memory()
   free_node(root);
 }
 
+void finalize_tools()
+{
+  // Nothing to do
+}
+
 void finalize()
 {
   free_memory();

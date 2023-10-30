@@ -160,6 +160,11 @@ void free_memory()
   free(particles);
 }
 
+void finalize_tools()
+{
+  // Nothing to do
+}
+
 void finalize()
 {
   free_memory();

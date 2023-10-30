@@ -38,6 +38,8 @@ void all_move_particles_valid(double step);
 
 void run_simulation_valid();
 
+void free_memory_valid();
+
 void finalize_valid();
 
 #endif

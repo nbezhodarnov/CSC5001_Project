@@ -123,7 +123,12 @@ void run_simulation_valid()
   }
 }
 
-void finalize_valid()
+void free_memory_valid()
 {
   free(particles_valid);
+}
+
+void finalize_valid()
+{
+  free_memory_valid();
 }

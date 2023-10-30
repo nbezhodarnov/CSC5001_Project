@@ -61,6 +61,8 @@ void run_simulation();
 /* create a quad-tree from an array of particles */
 void insert_all_particles(int nparticles, particle_t *particles, node_t *root);
 
+void free_memory();
+
 void finalize();
 
 #endif

@@ -29,8 +29,8 @@ void setup(void)
 
 void teardown(void)
 {
-    finalize();
-    finalize_valid();
+    free_memory();
+    free_memory_valid();
 }
 
 #define ck_assert_double_eq_tolerant(X, Y) ck_assert_double_eq_tol(X, Y, 1e-6)

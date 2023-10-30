@@ -256,8 +256,13 @@ void insert_all_particles_valid(int nparticles, particle_t *particles, node_t *r
   }
 }
 
-void finalize_valid()
+void free_memory_valid()
 {
   free(particles_valid);
   free_node(root_valid);
+}
+
+void finalize_valid()
+{
+  free_memory_valid();
 }

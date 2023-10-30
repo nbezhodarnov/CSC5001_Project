@@ -289,8 +289,13 @@ void insert_all_particles(int nparticles, particle_t *particles, node_t *root)
   }
 }
 
-void finalize()
+void free_memory()
 {
   free(particles);
   free_node(root);
+}
+
+void finalize()
+{
+  free_memory();
 }

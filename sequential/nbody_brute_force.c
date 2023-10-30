@@ -155,7 +155,12 @@ void run_simulation()
   }
 }
 
-void finalize()
+void free_memory()
 {
   free(particles);
+}
+
+void finalize()
+{
+  free_memory();
 }

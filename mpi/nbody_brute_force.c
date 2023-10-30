@@ -282,12 +282,17 @@ void finalize_MPI()
   MPI_Finalize();
 }
 
-void finalize()
+void free_memory()
 {
-  finalize_MPI();
-
   free(particles);
 
   free(recvcounts);
   free(displs);
+}
+
+void finalize()
+{
+  finalize_MPI();
+
+  free_memory();
 }

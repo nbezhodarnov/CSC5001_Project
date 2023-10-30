@@ -48,6 +48,8 @@ void dump_particles(FILE *f);
 
 void run_simulation();
 
+void free_memory();
+
 void finalize();
 
 #endif

@@ -81,6 +81,40 @@ target_link_libraries(nbody_seq_barnes_hut nbody_seq_barnes_hut_lib)
 set_target_properties(nbody_seq_barnes_hut PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 
+find_package(MPI REQUIRED)
+
+# MPI BRUTE FORCE SOURCES
+set(MPI_BRUTE_FORCE_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/nbody_brute_force.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/nbody_brute_force.h
+    )
+
+# MPI BARNES HUT SOURCES
+set(MPI_BARNES_HUT_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/nbody_barnes_hut.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/nbody_barnes_hut.h
+    )
+
+# CONFIGURE AND BUILD MPI BRUTE FORCE VERSION
+add_library(nbody_mpi_brute_force_lib STATIC ${COMMON_SOURCE_FILES} ${MPI_BRUTE_FORCE_SOURCE_FILES})
+
+target_include_directories(nbody_mpi_brute_force_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
+target_link_libraries(nbody_mpi_brute_force_lib ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
+
+add_executable(nbody_mpi_brute_force ${MAIN_SOURCE_FILES})
+target_link_libraries(nbody_mpi_brute_force nbody_mpi_brute_force_lib)
+set_target_properties(nbody_mpi_brute_force PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+# CONFIGURE AND BUILD MPI BARNES HUT VERSION
+add_library(nbody_mpi_barnes_hut_lib STATIC ${COMMON_SOURCE_FILES} ${MPI_BARNES_HUT_SOURCE_FILES})
+
+target_include_directories(nbody_mpi_barnes_hut_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
+target_link_libraries(nbody_mpi_barnes_hut_lib ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
+
+add_executable(nbody_mpi_barnes_hut ${MAIN_SOURCE_FILES})
+target_link_libraries(nbody_mpi_barnes_hut nbody_mpi_barnes_hut_lib)
+set_target_properties(nbody_mpi_barnes_hut PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
 # CONFIGURE AND BUILD TESTS
 enable_testing()
 
@@ -119,8 +153,9 @@ set(TEST_PARAMETERS
         3 # total simulation time
     )
 
-set(IMPLEMENTATIONS_TO_TEST
+set(IMPLEMENTATIONS_TESTS_TO_BUILD
         "seq"
+        "mpi"
     )
 
 # CONFIGURE AND BUILD BRUTE FORCE TEST
@@ -129,11 +164,10 @@ add_library(nbody_valid_brute_force_lib STATIC ${COMMON_SOURCE_FILES} ${VALID_BR
 target_include_directories(nbody_valid_brute_force_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(nbody_valid_brute_force_lib ${DEPENDS_LIBS})
 
-foreach(impl ${IMPLEMENTATIONS_TO_TEST})
+foreach(impl ${IMPLEMENTATIONS_TESTS_TO_BUILD})
     add_executable(nbody_${impl}_brute_force_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
     target_link_libraries(nbody_${impl}_brute_force_test nbody_${impl}_brute_force_lib nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
     set_target_properties(nbody_${impl}_brute_force_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-    add_test(NAME nbody_${impl}_brute_force_test COMMAND bin/nbody_${impl}_brute_force_test ${TEST_PARAMETERS})
 endforeach()
 
 # CONFIGURE AND BUILD BARNES HUT TEST
@@ -142,9 +176,30 @@ add_library(nbody_valid_barnes_hut_lib STATIC ${COMMON_SOURCE_FILES} ${VALID_BAR
 target_include_directories(nbody_valid_barnes_hut_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(nbody_valid_barnes_hut_lib ${DEPENDS_LIBS})
 
-foreach(impl ${IMPLEMENTATIONS_TO_TEST})
+foreach(impl ${IMPLEMENTATIONS_TESTS_TO_BUILD})
     add_executable(nbody_${impl}_barnes_hut_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
     target_link_libraries(nbody_${impl}_barnes_hut_test nbody_${impl}_barnes_hut_lib nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
     set_target_properties(nbody_${impl}_barnes_hut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+endforeach()
+
+
+# CONFIGURE TEST CASES
+set(IMPLEMENTATIONS_TO_TEST
+        "seq"
+    )
+
+foreach(impl ${IMPLEMENTATIONS_TO_TEST})
+    add_test(NAME nbody_${impl}_brute_force_test COMMAND bin/nbody_${impl}_brute_force_test ${TEST_PARAMETERS})
     add_test(NAME nbody_${impl}_barnes_hut_test COMMAND bin/nbody_${impl}_barnes_hut_test ${TEST_PARAMETERS})
 endforeach()
+
+# CONFIGURE MPI TESTS MANUALLY TO LAUNCH IT VIA MPIRUN
+add_test(
+    NAME nbody_mpi_brute_force_test
+    COMMAND mpirun -np 5 bin/nbody_mpi_brute_force_test ${TEST_PARAMETERS})
+set_property(TEST nbody_mpi_brute_force_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")
+
+add_test(
+    NAME nbody_mpi_barnes_hut_test
+    COMMAND mpirun -np 5 bin/nbody_mpi_barnes_hut_test ${TEST_PARAMETERS})
+    set_property(TEST nbody_mpi_barnes_hut_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")

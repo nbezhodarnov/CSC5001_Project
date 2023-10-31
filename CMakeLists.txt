@@ -177,7 +177,7 @@ target_include_directories(nbody_valid_barnes_hut_lib PUBLIC ${CMAKE_CURRENT_SOU
 target_link_libraries(nbody_valid_barnes_hut_lib ${DEPENDS_LIBS})
 
 foreach(impl ${IMPLEMENTATIONS_TESTS_TO_BUILD})
-    add_executable(nbody_${impl}_barnes_hut_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
+    add_executable(nbody_${impl}_barnes_hut_test ${BARNES_HUT_TESTS_SOURCE_FILES})
     target_link_libraries(nbody_${impl}_barnes_hut_test nbody_${impl}_barnes_hut_lib nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
     set_target_properties(nbody_${impl}_barnes_hut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endforeach()

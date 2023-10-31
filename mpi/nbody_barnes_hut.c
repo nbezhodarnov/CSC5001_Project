@@ -95,23 +95,12 @@ void compute_force_on_particle(node_t *n, particle_t *p)
     /* There are multiple particles */
 
 #define THRESHOLD 2
+
     double size = n->x_max - n->x_min; // width of n
     double diff_x = n->x_center - p->x_pos;
     double diff_y = n->y_center - p->y_pos;
     double distance = sqrt(diff_x * diff_x + diff_y * diff_y);
 
-#if BRUTE_FORCE
-    /*
-      Run the procedure recursively on each of the current
-      node's children.
-      --> This result in a brute-force computation (complexity: O(n*n))
-    */
-    int i;
-    for (i = 0; i < 4; i++)
-    {
-      compute_force_on_particle(&n->children[i], p);
-    }
-#else
     /* Use the Barnes-Hut algorithm to get an approximation */
     if (size / distance < THRESHOLD)
     {
@@ -132,7 +121,6 @@ void compute_force_on_particle(node_t *n, particle_t *p)
         compute_force_on_particle(&n->children[i], p);
       }
     }
-#endif
   }
 }
 

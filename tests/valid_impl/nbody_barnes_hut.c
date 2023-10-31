@@ -92,18 +92,6 @@ void compute_force_on_particle_valid(node_t *n, particle_t *p)
     double diff_y = n->y_center - p->y_pos;
     double distance = sqrt(diff_x * diff_x + diff_y * diff_y);
 
-#if BRUTE_FORCE
-    /*
-      Run the procedure recursively on each of the current
-      node's children.
-      --> This result in a brute-force computation (complexity: O(n*n))
-    */
-    int i;
-    for (i = 0; i < 4; i++)
-    {
-      compute_force_on_particle_valid(&n->children[i], p);
-    }
-#else
     /* Use the Barnes-Hut algorithm to get an approximation */
     if (size / distance < THRESHOLD)
     {
@@ -124,7 +112,6 @@ void compute_force_on_particle_valid(node_t *n, particle_t *p)
         compute_force_on_particle_valid(&n->children[i], p);
       }
     }
-#endif
   }
 }
 

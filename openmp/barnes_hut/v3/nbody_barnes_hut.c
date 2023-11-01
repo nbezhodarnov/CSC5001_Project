@@ -89,8 +89,6 @@ void compute_force_on_particle(node_t *n, particle_t *p)
   {
     /* There are multiple particles */
 
-    omp_get_max_task_priority();
-
 #define THRESHOLD 2
     double size = n->x_max - n->x_min; // width of n
     double diff_x = n->x_center - p->x_pos;
@@ -219,13 +217,14 @@ void move_particles_in_node(node_t *n, double step, node_t *new_root)
 */
 void all_move_particles(double step)
 {
-  double t1 = omp_get_wtime();
   /* First calculate force for particles. */
-  compute_force_in_node(root);
+  #pragma omp parallel for schedule(dynamic)
+  for (int i = 0; i < nparticles; i++) {
+    particles[i].x_force = 0;
+    particles[i].y_force = 0;
 
-  double t2 = omp_get_wtime();
-
-  //printf("Time taken: %f\n", t2 - t1);
+    compute_force_on_particle(root, &particles[i]);
+  }
 
   node_t *new_root = alloc_node();
   init_node(new_root, NULL, XMIN, XMAX, YMIN, YMAX);
@@ -259,6 +258,7 @@ void run_simulation()
   {
     /* Update time. */
     t += dt;
+
     /* Move particles with the current and compute rms velocity. */
     all_move_particles(dt);
 

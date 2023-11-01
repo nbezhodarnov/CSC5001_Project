@@ -30,6 +30,8 @@ double sum_speed_sq = 0;
 double max_acc = 0;
 double max_speed = 0;
 
+int task_count = 1;
+
 node_t *root;
 
 extern bool display_enabled;
@@ -89,8 +91,6 @@ void compute_force_on_particle(node_t *n, particle_t *p)
   {
     /* There are multiple particles */
 
-    omp_get_max_task_priority();
-
 #define THRESHOLD 2
     double size = n->x_max - n->x_min; // width of n
     double diff_x = n->x_center - p->x_pos;
@@ -123,8 +123,8 @@ void compute_force_on_particle(node_t *n, particle_t *p)
         Otherwise, run the procedure recursively on each of the current
   node's children.
       */
-      int i;
-      for (i = 0; i < 4; i++)
+
+      for (int i = 0; i < 4; i++)
       {
         compute_force_on_particle(&n->children[i], p);
       }
@@ -145,13 +145,39 @@ void compute_force_in_node(node_t *n)
     p->y_force = 0;
     compute_force_on_particle(root, p);
   }
-  if (n->children)
+  else if (n->children)
   {
-    int i;
-    for (i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
-      compute_force_in_node(&n->children[i]);
+      int spawn = 0;
+
+      #pragma omp critical (count)
+      {
+        if (task_count < omp_get_num_threads()) {
+          task_count++;          
+          spawn = 1;
+        }
+      }
+
+      if (spawn)
+      {
+        #pragma omp task firstprivate(n, i) untied
+        {
+          compute_force_in_node(&n->children[i]);
+
+          #pragma omp critical (count)
+          {
+            task_count--;
+          }
+        }
+      }
+      else
+      {
+        compute_force_in_node(&n->children[i]);
+      }
     }
+
+    compute_force_in_node(&n->children[3]);
   }
 }
 
@@ -219,9 +245,17 @@ void move_particles_in_node(node_t *n, double step, node_t *new_root)
 */
 void all_move_particles(double step)
 {
-  double t1 = omp_get_wtime();
   /* First calculate force for particles. */
-  compute_force_in_node(root);
+
+  double t1 = omp_get_wtime();
+
+  #pragma omp parallel
+  {
+    #pragma omp master
+    {
+      compute_force_in_node(root);
+    }
+  }
 
   double t2 = omp_get_wtime();
 

@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.22.0)
 
+set(CMAKE_C_COMPILER "/usr/bin/clang")
+set(CMAKE_C_STANDARD 99)
+
 project(CSC5001-N-BODY VERSION 1.0.0)
 
-set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "-Wall -fopenmp")
 
 set(DEPENDS_LIBS
@@ -10,7 +12,7 @@ set(DEPENDS_LIBS
     pthread
 )
 
-set(DUMP_RESULT FALSE CACHE BOOL "Dump the results of the simulation")
+set(DUMP_RESULT TRUE CACHE BOOL "Dump the results of the simulation")
 set(DISPLAY FALSE CACHE BOOL "Display the results of the simulation")
 
 # COMMON SOURCES
@@ -33,6 +35,18 @@ set(SEQUENTIAL_BRUTE_FORCE_SOURCE_FILES
 set(SEQUENTIAL_BARNES_HUT_SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/sequential/nbody_barnes_hut.c
         ${CMAKE_CURRENT_SOURCE_DIR}/sequential/nbody_barnes_hut.h
+    )
+
+# OPENMP BRUTE FORCE SOURCES
+set(OPENMP_BRUTE_FORCE_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/openmp/nbody_brute_force.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/openmp/nbody_brute_force.h
+    )
+
+# OPENMP BARNES HUT SOURCES
+set(OPENMP_BARNES_HUT_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/openmp/nbody_barnes_hut.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/openmp/nbody_barnes_hut.h
     )
 
 # MAIN SOURCES
@@ -79,6 +93,42 @@ target_link_libraries(nbody_seq_barnes_hut_lib ${DEPENDS_LIBS})
 add_executable(nbody_seq_barnes_hut ${MAIN_SOURCE_FILES})
 target_link_libraries(nbody_seq_barnes_hut nbody_seq_barnes_hut_lib)
 set_target_properties(nbody_seq_barnes_hut PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+
+# CONFIGURE AND BUILD OPENMP VERSIONS
+file(GLOB APPROACH_FOLDER_LIST
+    ${CMAKE_CURRENT_SOURCE_DIR}/openmp/*)
+
+foreach(APPROACH ${APPROACH_FOLDER_LIST})
+    if (NOT IS_DIRECTORY ${APPROACH})
+        continue()
+    endif ()
+
+    file(GLOB VERSION_FOLDER_LIST ${APPROACH}/*)
+
+    foreach(VERSION ${VERSION_FOLDER_LIST})
+        if (NOT IS_DIRECTORY ${VERSION})
+            continue()
+        endif ()
+
+        file(GLOB_RECURSE VERSION_SOURCE_FILES 
+            ${VERSION}/*.c 
+            ${VERSION}/*.h)
+
+        get_filename_component(APPROACH_NAME ${APPROACH} NAME)
+        get_filename_component(VERSION_NAME ${VERSION} NAME)
+
+        add_library(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib STATIC ${COMMON_SOURCE_FILES} ${VERSION_SOURCE_FILES})
+
+        target_include_directories(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+        target_link_libraries(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib ${DEPENDS_LIBS})
+
+        add_executable(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} ${MAIN_SOURCE_FILES})
+        target_link_libraries(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib)
+        set_target_properties(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+    endforeach()
+endforeach()
+
 
 
 # CONFIGURE AND BUILD TESTS

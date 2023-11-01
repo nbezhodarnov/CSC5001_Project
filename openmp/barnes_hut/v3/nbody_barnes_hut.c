@@ -221,16 +221,13 @@ void all_move_particles(double step)
   init_node(new_root, NULL, XMIN, XMAX, YMIN, YMAX);
 
 /* First calculate force for particles. */
-#pragma omp parallel
+#pragma omp parallel for schedule(dynamic)
+  for (int i = 0; i < nparticles; i++)
   {
-#pragma omp for schedule(dynamic) nowait
-    for (int i = 0; i < nparticles; i++)
-    {
-      particles[i].x_force = 0;
-      particles[i].y_force = 0;
+    particles[i].x_force = 0;
+    particles[i].y_force = 0;
 
-      compute_force_on_particle(root, &particles[i]);
-    }
+    compute_force_on_particle(root, &particles[i]);
   }
 
   /* then move all particles and return statistics */
@@ -268,10 +265,6 @@ void all_move_particles(double step)
       insert_particle(p, new_root);
     }
   }
-
-  //
-  // move_particles_in_node(root, step, new_root);
-  //}
 
   free_node(root);
   root = new_root;

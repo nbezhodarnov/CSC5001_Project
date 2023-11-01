@@ -57,27 +57,6 @@ void compute_force(particle_t *p, double x_pos, double y_pos, double mass)
   p->y_force += grav_base * y_sep;
 }
 
-/* compute the new position/velocity */
-void move_particle(particle_t *p, double step)
-{
-  p->x_pos += (p->x_vel) * step;
-  p->y_pos += (p->y_vel) * step;
-  double x_acc = p->x_force / p->mass;
-  double y_acc = p->y_force / p->mass;
-  p->x_vel += x_acc * step;
-  p->y_vel += y_acc * step;
-
-  /* compute statistics */
-  double cur_acc = (x_acc * x_acc + y_acc * y_acc);
-  cur_acc = sqrt(cur_acc);
-  double speed_sq = (p->x_vel) * (p->x_vel) + (p->y_vel) * (p->y_vel);
-  double cur_speed = sqrt(speed_sq);
-
-  sum_speed_sq += speed_sq;
-  max_acc = MAX(max_acc, cur_acc);
-  max_speed = MAX(max_speed, cur_speed);
-}
-
 /*
   Move particles one time step.
 

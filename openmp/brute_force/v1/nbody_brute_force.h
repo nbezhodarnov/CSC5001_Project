@@ -25,9 +25,6 @@ void init();
  */
 void compute_force(particle_t *p, double x_pos, double y_pos, double mass);
 
-/* compute the new position/velocity */
-void move_particle(particle_t *p, double step);
-
 /*
   Move particles one time step.
 

@@ -134,6 +134,21 @@ foreach(APPROACH ${APPROACH_FOLDER_LIST})
         add_executable(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} ${MAIN_SOURCE_FILES})
         target_link_libraries(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib)
         set_target_properties(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+        list(APPEND VALID_IMPLEMENTATION_LIBS_TO_TEST
+            ${APPROACH_NAME}
+        )
+
+        list(APPEND IMPLEMENTATION_LIBS_TO_TEST
+            nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib
+        )
+
+        file(READ ${VERSION}/tests TEST_NAMES)
+
+        list (APPEND LIB_TEST
+            ${TEST_NAMES}
+        )
+
     endforeach()
 endforeach()
 
@@ -191,23 +206,23 @@ set(ALL_BARNES_HUT_TEST
     RUN_SIMULATION_TEST"
 )
 
-list(APPEND VALID_IMPLEMENTATION_LIBS_TO_TEST
-    "brute_force"
-    "brute_force"
-    "barnes_hut"
-)
+# list(APPEND VALID_IMPLEMENTATION_LIBS_TO_TEST
+#     "brute_force"
+#     "brute_force"
+#     "barnes_hut"
+# )
 
-list(APPEND IMPLEMENTATION_LIBS_TO_TEST
-    nbody_openmp_brute_force_v1_lib
-    nbody_openmp_brute_force_v2_lib
-    nbody_openmp_barnes_hut_v1_lib
-)
+# list(APPEND IMPLEMENTATION_LIBS_TO_TEST
+#     nbody_openmp_brute_force_v1_lib
+#     nbody_openmp_brute_force_v2_lib
+#     nbody_openmp_barnes_hut_v1_lib
+# )
 
-list (APPEND LIB_TEST
-    ${ALL_BRUTE_FORCE_TEST}
-    "ALL_MOVE_PARTICLES_TEST-RUN_SIMULATION_TEST"
-    ${ALL_BARNES_HUT_TEST}
-)
+# list (APPEND LIB_TEST
+#     ${ALL_BRUTE_FORCE_TEST}
+#     "ALL_MOVE_PARTICLES_TEST-RUN_SIMULATION_TEST"
+#     ${ALL_BARNES_HUT_TEST}
+# )
 
 # CONFIGURE BRUTE FORCE TEST TARGET
 add_library(nbody_valid_brute_force_lib STATIC ${COMMON_SOURCE_FILES} ${VALID_BRUTE_FORCE_SOURCE_FILES})
@@ -243,6 +258,7 @@ foreach(IMPL_LIBS IN ZIP_LISTS VALID_IMPLEMENTATION_LIBS_TO_TEST IMPLEMENTATION_
     string(REPLACE "-" ";" TEST_LIST ${IMPL_LIBS_2})
 
     foreach(TEST ${TEST_LIST})
+        # REMOVE WHITESPACES
         string(STRIP ${TEST} TEST_NAME)
         target_compile_options(${IMPL_LIBS_1}_test PRIVATE -D${TEST_NAME})
     endforeach()

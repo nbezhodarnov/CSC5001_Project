@@ -99,8 +99,8 @@ void init_local_variables(int rank, int size)
   recvcounts = malloc(sizeof(int) * size);
   displs = malloc(sizeof(int) * size);
 
-  /* recvcounts - number of bytes to receive from each node
-   * displs - byte displacement of each node reply in the receive buffer
+  /* recvcounts - number of particles to receive from each node
+   * displs - particles displacement of each node reply in the receive buffer
    */
   int i;
   for (i = 0; i < size - 1; i++)

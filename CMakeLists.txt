@@ -206,24 +206,6 @@ set(ALL_BARNES_HUT_TEST
     RUN_SIMULATION_TEST"
 )
 
-# list(APPEND VALID_IMPLEMENTATION_LIBS_TO_TEST
-#     "brute_force"
-#     "brute_force"
-#     "barnes_hut"
-# )
-
-# list(APPEND IMPLEMENTATION_LIBS_TO_TEST
-#     nbody_openmp_brute_force_v1_lib
-#     nbody_openmp_brute_force_v2_lib
-#     nbody_openmp_barnes_hut_v1_lib
-# )
-
-# list (APPEND LIB_TEST
-#     ${ALL_BRUTE_FORCE_TEST}
-#     "ALL_MOVE_PARTICLES_TEST-RUN_SIMULATION_TEST"
-#     ${ALL_BARNES_HUT_TEST}
-# )
-
 # CONFIGURE BRUTE FORCE TEST TARGET
 add_library(nbody_valid_brute_force_lib STATIC ${COMMON_SOURCE_FILES} ${VALID_BRUTE_FORCE_SOURCE_FILES})
 

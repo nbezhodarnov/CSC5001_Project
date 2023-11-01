@@ -246,9 +246,6 @@ void move_particles_in_node(node_t *n, double step, node_t *new_root)
 void all_move_particles(double step)
 {
   /* First calculate force for particles. */
-
-  double t1 = omp_get_wtime();
-
   #pragma omp parallel
   {
     #pragma omp master
@@ -256,8 +253,6 @@ void all_move_particles(double step)
       compute_force_in_node(root);
     }
   }
-
-  double t2 = omp_get_wtime();
 
   //printf("Time taken: %f\n", t2 - t1);
 

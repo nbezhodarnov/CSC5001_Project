@@ -40,6 +40,7 @@ void teardown(void)
 
 #define ck_assert_double_eq_tolerant(X, Y) ck_assert_double_eq_tol(X, Y, 1e-6)
 
+#ifdef COMPUTE_FORCE_TEST
 START_TEST(test_compute_force)
 {
     int i;
@@ -64,7 +65,9 @@ START_TEST(test_compute_force)
     }
 }
 END_TEST
+#endif
 
+#ifdef COMPUTE_FORCE_ON_PARTICLE_TEST
 START_TEST(test_compute_force_on_particle)
 {
     int i;
@@ -83,7 +86,9 @@ START_TEST(test_compute_force_on_particle)
     }
 }
 END_TEST
+#endif
 
+#ifdef COMPUTE_FORCE_IN_NODE_TEST
 START_TEST(test_compute_force_in_node)
 {
     compute_force_in_node(root);
@@ -97,7 +102,9 @@ START_TEST(test_compute_force_in_node)
     }
 }
 END_TEST
+#endif
 
+#ifdef ALL_MOVE_PARTICLES_TEST
 START_TEST(test_all_move_particles)
 {
     all_move_particles(0.01);
@@ -120,7 +127,9 @@ START_TEST(test_all_move_particles)
     }
 }
 END_TEST
+#endif
 
+#ifdef RUN_SIMULATION_TEST
 START_TEST(test_run_simulation)
 {
     printf("Starting simulation\n");
@@ -145,6 +154,7 @@ START_TEST(test_run_simulation)
     }
 }
 END_TEST
+#endif
 
 Suite *nbody_suite(void)
 {
@@ -155,11 +165,22 @@ Suite *nbody_suite(void)
 
     tc_core = tcase_create("Core");
     tcase_add_checked_fixture(tc_core, setup, teardown);
+
+#ifdef COMPUTE_FORCE_TEST
     tcase_add_test(tc_core, test_compute_force);
+#endif
+#ifdef COMPUTE_FORCE_ON_PARTICLE_TEST
     tcase_add_test(tc_core, test_compute_force_on_particle);
+#endif
+#ifdef COMPUTE_FORCE_IN_NODE_TEST
     tcase_add_test(tc_core, test_compute_force_in_node);
+#endif
+#ifdef ALL_MOVE_PARTICLES_TEST
     tcase_add_test(tc_core, test_all_move_particles);
+#endif
+#ifdef RUN_SIMULATION_TEST
     tcase_add_test(tc_core, test_run_simulation);
+#endif
     suite_add_tcase(s, tc_core);
 
     return s;

@@ -32,6 +32,9 @@ int get_quadrant(particle_t *particle, node_t *node);
 /* inserts a particle in a node (or one of its children)  */
 void insert_particle(particle_t *particle, node_t *node);
 
+/* inserts a particle in a node (or one of its children) in thread-safe manner */
+void locking_insert_particle(particle_t *particle, node_t *node);
+
 /*
   Place particles in their initial positions.
 */

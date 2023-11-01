@@ -223,7 +223,7 @@ void all_move_particles(double step)
 /* First calculate force for particles. */
 #pragma omp parallel
   {
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(dynamic)
     for (int i = 0; i < nparticles; i++)
     {
       particles[i].x_force = 0;
@@ -231,41 +231,42 @@ void all_move_particles(double step)
 
       compute_force_on_particle(root, &particles[i]);
     }
-  }
 
-  /* then move all particles and return statistics */
-  for (int i = 0; i < nparticles; i++)
-  {
-    particle_t *p = &particles[i];
-    assert(p->node != NULL);
-    p->x_pos += (p->x_vel) * step;
-    p->y_pos += (p->y_vel) * step;
-    double x_acc = p->x_force / p->mass;
-    double y_acc = p->y_force / p->mass;
-    p->x_vel += x_acc * step;
-    p->y_vel += y_acc * step;
-
-    /* compute statistics */
-    double cur_acc = (x_acc * x_acc + y_acc * y_acc);
-    cur_acc = sqrt(cur_acc);
-    double speed_sq = (p->x_vel) * (p->x_vel) + (p->y_vel) * (p->y_vel);
-    double cur_speed = sqrt(speed_sq);
-
-    sum_speed_sq += speed_sq;
-    max_acc = MAX(max_acc, cur_acc);
-    max_speed = MAX(max_speed, cur_speed);
-
-    p->node = NULL;
-    if (p->x_pos < new_root->x_min ||
-        p->x_pos > new_root->x_max ||
-        p->y_pos < new_root->y_min ||
-        p->y_pos > new_root->y_max)
+    /* then move all particles and return statistics */
+#pragma omp for schedule(dynamic)
+    for (int i = 0; i < nparticles; i++)
     {
-      nparticles--;
-    }
-    else
-    {
-      insert_particle(p, new_root);
+      particle_t *p = &particles[i];
+      assert(p->node != NULL);
+      p->x_pos += (p->x_vel) * step;
+      p->y_pos += (p->y_vel) * step;
+      double x_acc = p->x_force / p->mass;
+      double y_acc = p->y_force / p->mass;
+      p->x_vel += x_acc * step;
+      p->y_vel += y_acc * step;
+
+      /* compute statistics */
+      double cur_acc = (x_acc * x_acc + y_acc * y_acc);
+      cur_acc = sqrt(cur_acc);
+      double speed_sq = (p->x_vel) * (p->x_vel) + (p->y_vel) * (p->y_vel);
+      double cur_speed = sqrt(speed_sq);
+
+      sum_speed_sq += speed_sq;
+      max_acc = MAX(max_acc, cur_acc);
+      max_speed = MAX(max_speed, cur_speed);
+
+      p->node = NULL;
+      if (p->x_pos < new_root->x_min ||
+          p->x_pos > new_root->x_max ||
+          p->y_pos < new_root->y_min ||
+          p->y_pos > new_root->y_max)
+      {
+        nparticles--;
+      }
+      else
+      {
+        locking_insert_particle(p, new_root);
+      }
     }
   }
 

@@ -219,13 +219,8 @@ void move_particles_in_node(node_t *n, double step, node_t *new_root)
 */
 void all_move_particles(double step)
 {
-  double t1 = omp_get_wtime();
   /* First calculate force for particles. */
   compute_force_in_node(root);
-
-  double t2 = omp_get_wtime();
-
-  //printf("Time taken: %f\n", t2 - t1);
 
   node_t *new_root = alloc_node();
   init_node(new_root, NULL, XMIN, XMAX, YMIN, YMAX);

@@ -73,6 +73,14 @@ if (DISPLAY)
     add_definitions(-DDISPLAY)
 endif ()
 
+# LIST OF VALID (SEQUENTIAL) IMPLEMENTATIONS TO TEST
+set(VALID_IMPLEMENTATION_LIBS_TO_TEST "")
+
+# LIST OF PARALLEL IMPLEMENTATIONS TO TEST
+set(IMPLEMENTATION_LIBS_TO_TEST "")
+
+# LIST OF TESTS TO RUN FOR EACH IMPLEMENTATION
+set(LIB_TEST "")
 
 # CONFIGURE AND BUILD SEQUENTIAL BRUTE FORCE VERSION
 add_library(nbody_seq_brute_force_lib STATIC ${COMMON_SOURCE_FILES} ${SEQUENTIAL_BRUTE_FORCE_SOURCE_FILES})
@@ -169,32 +177,73 @@ set(TEST_PARAMETERS
         3 # total simulation time
     )
 
-set(IMPLEMENTATIONS_TO_TEST
-        "seq"
-    )
+set(ALL_BRUTE_FORCE_TEST
+    "COMPUTE_FOCE_TEST-\
+    COMPUTE_FOCE_ON_PARTICLE_TEST-\
+    COMPUTE_FORCE_IN_NODE_TEST-\
+    ALL_MOVE_PARTICLES_TEST-\
+    RUN_SIMULATION_TEST"
+)
 
-# CONFIGURE AND BUILD BRUTE FORCE TEST
+set(ALL_BARNES_HUT_TEST
+    "COMPUTE_FOCE_TEST-\
+    ALL_MOVE_PARTICLES_TEST-\
+    RUN_SIMULATION_TEST"
+)
+
+list(APPEND VALID_IMPLEMENTATION_LIBS_TO_TEST
+    "brute_force"
+    "brute_force"
+    "barnes_hut"
+)
+
+list(APPEND IMPLEMENTATION_LIBS_TO_TEST
+    nbody_openmp_brute_force_v1_lib
+    nbody_openmp_brute_force_v2_lib
+    nbody_openmp_barnes_hut_v1_lib
+)
+
+list (APPEND LIB_TEST
+    ${ALL_BRUTE_FORCE_TEST}
+    "ALL_MOVE_PARTICLES_TEST-RUN_SIMULATION_TEST"
+    ${ALL_BARNES_HUT_TEST}
+)
+
+# CONFIGURE BRUTE FORCE TEST TARGET
 add_library(nbody_valid_brute_force_lib STATIC ${COMMON_SOURCE_FILES} ${VALID_BRUTE_FORCE_SOURCE_FILES})
 
 target_include_directories(nbody_valid_brute_force_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(nbody_valid_brute_force_lib ${DEPENDS_LIBS})
 
-foreach(impl ${IMPLEMENTATIONS_TO_TEST})
-    add_executable(nbody_${impl}_brute_force_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
-    target_link_libraries(nbody_${impl}_brute_force_test nbody_${impl}_brute_force_lib nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
-    set_target_properties(nbody_${impl}_brute_force_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-    add_test(NAME nbody_${impl}_brute_force_test COMMAND bin/nbody_${impl}_brute_force_test ${TEST_PARAMETERS})
-endforeach()
-
-# CONFIGURE AND BUILD BARNES HUT TEST
+# CONFIGURE BARNES HUT TEST TARGET
 add_library(nbody_valid_barnes_hut_lib STATIC ${COMMON_SOURCE_FILES} ${VALID_BARNES_HUT_SOURCE_FILES})
 
 target_include_directories(nbody_valid_barnes_hut_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(nbody_valid_barnes_hut_lib ${DEPENDS_LIBS})
 
-foreach(impl ${IMPLEMENTATIONS_TO_TEST})
-    add_executable(nbody_${impl}_barnes_hut_test ${BARNES_HUT_TESTS_SOURCE_FILES})
-    target_link_libraries(nbody_${impl}_barnes_hut_test nbody_${impl}_barnes_hut_lib nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
-    set_target_properties(nbody_${impl}_barnes_hut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-    add_test(NAME nbody_${impl}_barnes_hut_test COMMAND bin/nbody_${impl}_barnes_hut_test ${TEST_PARAMETERS})
+foreach(IMPL_LIBS IN ZIP_LISTS VALID_IMPLEMENTATION_LIBS_TO_TEST IMPLEMENTATION_LIBS_TO_TEST LIB_TEST)
+
+    string(REGEX MATCH "^(.*)brute_force(.*)$" BRUTE_FORCE_APPROACH ${IMPL_LIBS_0})
+    string(REGEX MATCH "^(.*)barnes_hut(.*)$" BARNES_HUT_APPROACH ${IMPL_LIBS_0})
+
+    if (NOT ${BRUTE_FORCE_APPROACH} STREQUAL "")
+        # CONFIGURE AND BUILD BRUTE FORCE TESTS
+        add_executable(${IMPL_LIBS_1}_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
+        target_link_libraries(${IMPL_LIBS_1}_test ${IMPL_LIBS_1} nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
+        set_target_properties(${IMPL_LIBS_1}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
+        add_test(NAME ${IMPL_LIBS_1}_test COMMAND bin/tests/${IMPL_LIBS_1}_test ${TEST_PARAMETERS})
+    elseif (NOT ${BARNES_HUT_APPROACH} STREQUAL "")
+        # CONFIGURE AND BUILD BRUTE FORCE TESTS
+        add_executable(${IMPL_LIBS_1}_test ${BARNES_HUT_TESTS_SOURCE_FILES})
+        target_link_libraries(${IMPL_LIBS_1}_test ${IMPL_LIBS_1} nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
+        set_target_properties(${IMPL_LIBS_1}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
+        add_test(NAME ${IMPL_LIBS_1}_test COMMAND bin/tests/${IMPL_LIBS_1}_test ${TEST_PARAMETERS})
+    endif ()
+
+    string(REPLACE "-" ";" TEST_LIST ${IMPL_LIBS_2})
+
+    foreach(TEST ${TEST_LIST})
+        string(STRIP ${TEST} TEST_NAME)
+        target_compile_options(${IMPL_LIBS_1}_test PRIVATE -D${TEST_NAME})
+    endforeach()
 endforeach()

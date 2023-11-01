@@ -25,6 +25,14 @@ void setup(void)
 
     init(argc, argv);
     init_valid(argc, argv);
+
+    for (int i = 0; i < nparticles; i++)
+    {
+        particles[i].x_force = 0;
+        particles[i].y_force = 0;
+        particles_valid[i].x_force = 0;
+        particles_valid[i].y_force = 0;
+    }
 }
 
 void teardown(void)
@@ -41,10 +49,6 @@ START_TEST(test_compute_force)
     for (i = 0; i < nparticles; i++)
     {
         int j;
-        particles[i].x_force = 0;
-        particles[i].y_force = 0;
-        particles_valid[i].x_force = 0;
-        particles_valid[i].y_force = 0;
         for (j = 0; j < nparticles; j++)
         {
             particle_t *p = &particles[j];
@@ -65,11 +69,6 @@ START_TEST(test_compute_force_on_particle)
     int i;
     for (i = 0; i < nparticles; i++)
     {
-        particles[i].x_force = 0;
-        particles[i].y_force = 0;
-        particles_valid[i].x_force = 0;
-        particles_valid[i].y_force = 0;
-
         compute_force_on_particle(root, &particles[i]);
         compute_force_on_particle_valid(root_valid, &particles_valid[i]);
 

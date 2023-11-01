@@ -67,12 +67,17 @@ END_TEST
 
 START_TEST(test_compute_force_on_particle)
 {
-    compute_force_on_particle(root, particles);
-    compute_force_on_particle_valid(root_valid, particles_valid);
-
     int i;
     for (i = 0; i < nparticles; i++)
     {
+        particles[i].x_force = 0;
+        particles[i].y_force = 0;
+        particles_valid[i].x_force = 0;
+        particles_valid[i].y_force = 0;
+
+        compute_force_on_particle(root, &particles[i]);
+        compute_force_on_particle_valid(root_valid, &particles_valid[i]);
+
         ck_assert_double_eq_tolerant(particles[i].x_force, particles_valid[i].x_force);
         ck_assert_double_eq_tolerant(particles[i].y_force, particles_valid[i].y_force);
     }

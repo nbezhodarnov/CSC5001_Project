@@ -183,6 +183,10 @@ foreach(impl ${IMPLEMENTATIONS_TESTS_TO_BUILD})
     set_target_properties(nbody_${impl}_brute_force_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endforeach()
 
+add_executable(nbody_mpi_brute_force_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
+target_link_libraries(nbody_mpi_brute_force_test nbody_mpi_brute_force_lib nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
+set_target_properties(nbody_mpi_brute_force_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
 # CONFIGURE AND BUILD BARNES HUT TEST
 add_library(nbody_valid_barnes_hut_lib STATIC ${COMMON_SOURCE_FILES} ${VALID_BARNES_HUT_SOURCE_FILES})
 

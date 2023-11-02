@@ -129,6 +129,54 @@ add_executable(nbody_mpi_barnes_hut_v2 ${MAIN_SOURCE_FILES})
 target_link_libraries(nbody_mpi_barnes_hut_v2 nbody_mpi_barnes_hut_v2_lib)
 set_target_properties(nbody_mpi_barnes_hut_v2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
+
+# OPENMP-MPI BRUTE FORCE SOURCES
+set(OPENMP_MPI_BRUTE_FORCE_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/nbody_brute_force.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/nbody_brute_force.h
+    )
+
+# OPENMP-MPI BARNES HUT SOURCES
+set(OPENMP_MPI_BARNES_HUT_V1_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/barnes_hut/v1/nbody_barnes_hut.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/barnes_hut/v1/nbody_barnes_hut.h
+    )
+
+set(OPENMP_MPI_BARNES_HUT_V2_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/barnes_hut/v2/nbody_barnes_hut.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/barnes_hut/v2/nbody_barnes_hut.h
+    )
+
+# CONFIGURE AND BUILD OPENMP-MPI BRUTE FORCE VERSION
+add_library(nbody_openmp_mpi_brute_force_lib STATIC ${COMMON_SOURCE_FILES} ${OPENMP_MPI_BRUTE_FORCE_SOURCE_FILES})
+
+target_include_directories(nbody_openmp_mpi_brute_force_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
+target_link_libraries(nbody_openmp_mpi_brute_force_lib ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
+
+add_executable(nbody_openmp_mpi_brute_force ${MAIN_SOURCE_FILES})
+target_link_libraries(nbody_openmp_mpi_brute_force nbody_openmp_mpi_brute_force_lib)
+set_target_properties(nbody_openmp_mpi_brute_force PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+# CONFIGURE AND BUILD OPENMP-MPI BARNES HUT VERSION
+add_library(nbody_openmp_mpi_barnes_hut_v1_lib STATIC ${COMMON_SOURCE_FILES} ${OPENMP_MPI_BARNES_HUT_V1_SOURCE_FILES})
+
+target_include_directories(nbody_openmp_mpi_barnes_hut_v1_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
+target_link_libraries(nbody_openmp_mpi_barnes_hut_v1_lib ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
+
+add_executable(nbody_openmp_mpi_barnes_hut_v1 ${MAIN_SOURCE_FILES})
+target_link_libraries(nbody_openmp_mpi_barnes_hut_v1 nbody_openmp_mpi_barnes_hut_v1_lib)
+set_target_properties(nbody_openmp_mpi_barnes_hut_v1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+add_library(nbody_openmp_mpi_barnes_hut_v2_lib STATIC ${COMMON_SOURCE_FILES} ${OPENMP_MPI_BARNES_HUT_V2_SOURCE_FILES})
+
+target_include_directories(nbody_openmp_mpi_barnes_hut_v2_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
+target_link_libraries(nbody_openmp_mpi_barnes_hut_v2_lib ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
+
+add_executable(nbody_openmp_mpi_barnes_hut_v2 ${MAIN_SOURCE_FILES})
+target_link_libraries(nbody_openmp_mpi_barnes_hut_v2 nbody_openmp_mpi_barnes_hut_v2_lib)
+set_target_properties(nbody_openmp_mpi_barnes_hut_v2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+
 # CONFIGURE AND BUILD TESTS
 enable_testing()
 
@@ -187,6 +235,10 @@ add_executable(nbody_mpi_brute_force_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
 target_link_libraries(nbody_mpi_brute_force_test nbody_mpi_brute_force_lib nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
 set_target_properties(nbody_mpi_brute_force_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
+add_executable(nbody_openmp_mpi_brute_force_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
+target_link_libraries(nbody_openmp_mpi_brute_force_test nbody_openmp_mpi_brute_force_lib nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
+set_target_properties(nbody_openmp_mpi_brute_force_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
 # CONFIGURE AND BUILD BARNES HUT TEST
 add_library(nbody_valid_barnes_hut_lib STATIC ${COMMON_SOURCE_FILES} ${VALID_BARNES_HUT_SOURCE_FILES})
 
@@ -206,6 +258,14 @@ set_target_properties(nbody_mpi_barnes_hut_v1_test PROPERTIES RUNTIME_OUTPUT_DIR
 add_executable(nbody_mpi_barnes_hut_v2_test ${BARNES_HUT_TESTS_SOURCE_FILES})
 target_link_libraries(nbody_mpi_barnes_hut_v2_test nbody_mpi_barnes_hut_v2_lib nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
 set_target_properties(nbody_mpi_barnes_hut_v2_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+add_executable(nbody_openmp_mpi_barnes_hut_v1_test ${BARNES_HUT_TESTS_SOURCE_FILES})
+target_link_libraries(nbody_openmp_mpi_barnes_hut_v1_test nbody_openmp_mpi_barnes_hut_v1_lib nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
+set_target_properties(nbody_openmp_mpi_barnes_hut_v1_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+add_executable(nbody_openmp_mpi_barnes_hut_v2_test ${BARNES_HUT_TESTS_SOURCE_FILES})
+target_link_libraries(nbody_openmp_mpi_barnes_hut_v2_test nbody_openmp_mpi_barnes_hut_v2_lib nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
+set_target_properties(nbody_openmp_mpi_barnes_hut_v2_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 
 # CONFIGURE TEST CASES
@@ -233,3 +293,20 @@ add_test(
     NAME nbody_mpi_barnes_hut_v2_test
     COMMAND mpirun -np 5 bin/nbody_mpi_barnes_hut_v2_test ${TEST_PARAMETERS})
     set_property(TEST nbody_mpi_barnes_hut_v2_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")
+
+
+# CONFIGURE OPENMP-MPI TESTS MANUALLY TO LAUNCH IT VIA MPIRUN
+add_test(
+    NAME nbody_openmp_mpi_brute_force_test
+    COMMAND mpirun -np 5 bin/nbody_openmp_mpi_brute_force_test ${TEST_PARAMETERS})
+set_property(TEST nbody_openmp_mpi_brute_force_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")
+
+add_test(
+    NAME nbody_openmp_mpi_barnes_hut_v1_test
+    COMMAND mpirun -np 5 bin/nbody_openmp_mpi_barnes_hut_v1_test ${TEST_PARAMETERS})
+    set_property(TEST nbody_openmp_mpi_barnes_hut_v1_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")
+
+add_test(
+    NAME nbody_openmp_mpi_barnes_hut_v2_test
+    COMMAND mpirun -np 5 bin/nbody_openmp_mpi_barnes_hut_v2_test ${TEST_PARAMETERS})
+    set_property(TEST nbody_openmp_mpi_barnes_hut_v2_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")

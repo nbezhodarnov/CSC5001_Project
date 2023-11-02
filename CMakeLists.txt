@@ -90,9 +90,14 @@ set(MPI_BRUTE_FORCE_SOURCE_FILES
     )
 
 # MPI BARNES HUT SOURCES
-set(MPI_BARNES_HUT_SOURCE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/nbody_barnes_hut.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/nbody_barnes_hut.h
+set(MPI_BARNES_HUT_V1_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/barnes_hut/v1/nbody_barnes_hut.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/barnes_hut/v1/nbody_barnes_hut.h
+    )
+
+set(MPI_BARNES_HUT_V2_SOURCE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/barnes_hut/v2/nbody_barnes_hut.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpi/barnes_hut/v2/nbody_barnes_hut.h
     )
 
 # CONFIGURE AND BUILD MPI BRUTE FORCE VERSION
@@ -106,14 +111,23 @@ target_link_libraries(nbody_mpi_brute_force nbody_mpi_brute_force_lib)
 set_target_properties(nbody_mpi_brute_force PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 # CONFIGURE AND BUILD MPI BARNES HUT VERSION
-add_library(nbody_mpi_barnes_hut_lib STATIC ${COMMON_SOURCE_FILES} ${MPI_BARNES_HUT_SOURCE_FILES})
+add_library(nbody_mpi_barnes_hut_v1_lib STATIC ${COMMON_SOURCE_FILES} ${MPI_BARNES_HUT_V1_SOURCE_FILES})
 
-target_include_directories(nbody_mpi_barnes_hut_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
-target_link_libraries(nbody_mpi_barnes_hut_lib ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
+target_include_directories(nbody_mpi_barnes_hut_v1_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
+target_link_libraries(nbody_mpi_barnes_hut_v1_lib ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
 
-add_executable(nbody_mpi_barnes_hut ${MAIN_SOURCE_FILES})
-target_link_libraries(nbody_mpi_barnes_hut nbody_mpi_barnes_hut_lib)
-set_target_properties(nbody_mpi_barnes_hut PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+add_executable(nbody_mpi_barnes_hut_v1 ${MAIN_SOURCE_FILES})
+target_link_libraries(nbody_mpi_barnes_hut_v1 nbody_mpi_barnes_hut_v1_lib)
+set_target_properties(nbody_mpi_barnes_hut_v1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+add_library(nbody_mpi_barnes_hut_v2_lib STATIC ${COMMON_SOURCE_FILES} ${MPI_BARNES_HUT_V2_SOURCE_FILES})
+
+target_include_directories(nbody_mpi_barnes_hut_v2_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
+target_link_libraries(nbody_mpi_barnes_hut_v2_lib ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
+
+add_executable(nbody_mpi_barnes_hut_v2 ${MAIN_SOURCE_FILES})
+target_link_libraries(nbody_mpi_barnes_hut_v2 nbody_mpi_barnes_hut_v2_lib)
+set_target_properties(nbody_mpi_barnes_hut_v2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 # CONFIGURE AND BUILD TESTS
 enable_testing()
@@ -155,7 +169,6 @@ set(TEST_PARAMETERS
 
 set(IMPLEMENTATIONS_TESTS_TO_BUILD
         "seq"
-        "mpi"
     )
 
 # CONFIGURE AND BUILD BRUTE FORCE TEST
@@ -182,6 +195,14 @@ foreach(impl ${IMPLEMENTATIONS_TESTS_TO_BUILD})
     set_target_properties(nbody_${impl}_barnes_hut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endforeach()
 
+add_executable(nbody_mpi_barnes_hut_v1_test ${BARNES_HUT_TESTS_SOURCE_FILES})
+target_link_libraries(nbody_mpi_barnes_hut_v1_test nbody_mpi_barnes_hut_v1_lib nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
+set_target_properties(nbody_mpi_barnes_hut_v1_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+add_executable(nbody_mpi_barnes_hut_v2_test ${BARNES_HUT_TESTS_SOURCE_FILES})
+target_link_libraries(nbody_mpi_barnes_hut_v2_test nbody_mpi_barnes_hut_v2_lib nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
+set_target_properties(nbody_mpi_barnes_hut_v2_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
 
 # CONFIGURE TEST CASES
 set(IMPLEMENTATIONS_TO_TEST
@@ -200,6 +221,11 @@ add_test(
 set_property(TEST nbody_mpi_brute_force_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")
 
 add_test(
-    NAME nbody_mpi_barnes_hut_test
-    COMMAND mpirun -np 5 bin/nbody_mpi_barnes_hut_test ${TEST_PARAMETERS})
-    set_property(TEST nbody_mpi_barnes_hut_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")
+    NAME nbody_mpi_barnes_hut_v1_test
+    COMMAND mpirun -np 5 bin/nbody_mpi_barnes_hut_v1_test ${TEST_PARAMETERS})
+    set_property(TEST nbody_mpi_barnes_hut_v1_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")
+
+add_test(
+    NAME nbody_mpi_barnes_hut_v2_test
+    COMMAND mpirun -np 5 bin/nbody_mpi_barnes_hut_v2_test ${TEST_PARAMETERS})
+    set_property(TEST nbody_mpi_barnes_hut_v2_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1")

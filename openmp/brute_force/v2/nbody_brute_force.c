@@ -30,8 +30,10 @@ double max_speed = 0;
 
 extern bool display_enabled;
 
-void init()
+void init(int argc, char **argv)
 {
+  parse_args(argc, argv);
+  
   /* Allocate global shared arrays for the particles data set. */
   particles = malloc(sizeof(particle_t) * nparticles);
   all_init_particles(nparticles, particles);
@@ -190,3 +192,9 @@ void run_simulation()
 #endif
   }
 }
+
+// For compatibility with the other implementations
+void init_tools(int argc, char **argv) {}
+void finalize_tools() {}
+void finalize() {}
+void free_memory() {}

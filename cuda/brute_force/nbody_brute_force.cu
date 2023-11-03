@@ -3,7 +3,7 @@
 **
 **/
 
-//#include "nbody_functions.h"
+// #include "nbody_functions.h"
 
 #ifdef DISPLAY
 #include "utils/ui/ui.h"
@@ -18,7 +18,7 @@
 FILE *f_out = NULL;
 
 int nparticles = 500; /* number of particles */
-float T_FINAL = 1.0; /* simulation end time */
+float T_FINAL = 1.0;  /* simulation end time */
 particle_t *particles;
 
 double sum_speed_sq = 0;
@@ -67,10 +67,12 @@ static __inline__ __device__ double atomicMax(double *address, double val)
   return __longlong_as_double(old);
 }
 
-extern "C" void init()
+extern "C" void init(int argc, char **argv)
 {
+  parse_args(argc, argv);
+
   /* Allocate global shared arrays for the particles data set. */
-  particles = (particle_t *) malloc(sizeof(particle_t) * nparticles);
+  particles = (particle_t *)malloc(sizeof(particle_t) * nparticles);
   all_init_particles(nparticles, particles);
 }
 
@@ -209,4 +211,13 @@ extern "C" void run_simulation()
   cudaFree(gpu_max_speed);
 
   cudaDeviceSynchronize();
+}
+
+// For compatibility with the other implementations
+extern "C"
+{
+  void init_tools(int argc, char **argv) {}
+  void finalize_tools() {}
+  void finalize() {}
+  void free_memory() {}
 }

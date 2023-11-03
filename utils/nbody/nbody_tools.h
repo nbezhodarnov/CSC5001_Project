@@ -29,7 +29,14 @@ void print_particles(FILE *f, node_t *n);
 #endif
 
 /* Parse command line arguments */
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 void parse_args(int argc, char **argv);
+#ifdef __cplusplus
+}
+#endif
 
 /* Initialize a node */
 void init_node(node_t *n, node_t *parent, double x_min, double x_max, double y_min, double y_max);

@@ -117,10 +117,10 @@ foreach(CUDA_APPROACH ${CUDA_APPROACH_FOLDER_LIST})
 endforeach()
 
 # CONFIGURE AND BUILD OPENMP VERSIONS
-file(GLOB APPROACH_FOLDER_LIST
+file(GLOB OPENMP_APPROACH_FOLDER_LIST
     ${CMAKE_CURRENT_SOURCE_DIR}/openmp/*)
 
-foreach(APPROACH ${APPROACH_FOLDER_LIST})
+foreach(APPROACH ${OPENMP_APPROACH_FOLDER_LIST})
     if (NOT IS_DIRECTORY ${APPROACH})
         continue()
     endif ()
@@ -142,7 +142,7 @@ foreach(APPROACH ${APPROACH_FOLDER_LIST})
         add_library(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib STATIC ${COMMON_SOURCE_FILES} ${VERSION_SOURCE_FILES})
 
         target_include_directories(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-        target_link_libraries(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib ${DEPENDS_LIBS})
+        target_link_libraries(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib PUBLIC ${DEPENDS_LIBS})
 
         add_executable(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} ${MAIN_SOURCE_FILES})
         target_link_libraries(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib)
@@ -156,6 +156,101 @@ foreach(APPROACH ${APPROACH_FOLDER_LIST})
             nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib
         )
 
+        file(READ ${VERSION}/tests TEST_NAMES)
+
+        list (APPEND LIB_TEST
+            ${TEST_NAMES}
+        )
+
+    endforeach()
+endforeach()
+
+# CONFIGURE AND BUILD MPI VERSIONS
+find_package(MPI REQUIRED)
+
+file(GLOB MPI_APPROACH_FOLDER_LIST
+    ${CMAKE_CURRENT_SOURCE_DIR}/mpi/*)
+
+foreach(APPROACH ${MPI_APPROACH_FOLDER_LIST})
+    if (NOT IS_DIRECTORY ${APPROACH})
+        continue()
+    endif ()
+
+    file(GLOB MPI_VERSION_FOLDER_LIST ${APPROACH}/*)
+
+    foreach(VERSION ${MPI_VERSION_FOLDER_LIST})
+        if (NOT IS_DIRECTORY ${VERSION})
+            continue()
+        endif ()
+
+        file(GLOB_RECURSE VERSION_SOURCE_FILES 
+            ${VERSION}/*.c 
+            ${VERSION}/*.h)
+
+        get_filename_component(APPROACH_NAME ${APPROACH} NAME)
+        get_filename_component(VERSION_NAME ${VERSION} NAME)
+
+        add_library(nbody_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib STATIC ${COMMON_SOURCE_FILES} ${VERSION_SOURCE_FILES})
+
+        target_include_directories(nbody_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
+        target_link_libraries(nbody_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib PUBLIC ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
+
+        add_executable(nbody_mpi_${APPROACH_NAME}_${VERSION_NAME} ${MAIN_SOURCE_FILES})
+        target_link_libraries(nbody_mpi_${APPROACH_NAME}_${VERSION_NAME} nbody_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib)
+        set_target_properties(nbody_mpi_${APPROACH_NAME}_${VERSION_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+        list(APPEND IMPLEMENTATION_LIBS_TO_TEST
+            nbody_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib
+        )
+
+        # LIST OF TESTS TO RUN FOR EACH IMPLEMENTATION
+        file(READ ${VERSION}/tests TEST_NAMES)
+
+        list (APPEND LIB_TEST
+            ${TEST_NAMES}
+        )
+
+    endforeach()
+endforeach()
+
+
+# CONFIGURE AND BUILD OPENMP + MPI VERSIONS
+file(GLOB OPENMP_MPI_APPROACH_FOLDER_LIST
+    ${CMAKE_CURRENT_SOURCE_DIR}/mpi/*)
+
+foreach(APPROACH ${OPENMP_MPI_APPROACH_FOLDER_LIST})
+    if (NOT IS_DIRECTORY ${APPROACH})
+        continue()
+    endif ()
+
+    file(GLOB OPENMP_MPI_VERSION_FOLDER_LIST ${APPROACH}/*)
+
+    foreach(VERSION ${OPENMP_MPI_VERSION_FOLDER_LIST})
+        if (NOT IS_DIRECTORY ${VERSION})
+            continue()
+        endif ()
+
+        file(GLOB_RECURSE VERSION_SOURCE_FILES 
+            ${VERSION}/*.c 
+            ${VERSION}/*.h)
+
+        get_filename_component(APPROACH_NAME ${APPROACH} NAME)
+        get_filename_component(VERSION_NAME ${VERSION} NAME)
+
+        add_library(nbody_openmp_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib STATIC ${COMMON_SOURCE_FILES} ${VERSION_SOURCE_FILES})
+
+        target_include_directories(nbody_openmp_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MPI_INCLUDE_PATH})
+        target_link_libraries(nbody_openmp_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib PUBLIC ${MPI_C_LIBRARIES} ${DEPENDS_LIBS})
+
+        add_executable(nbody_openmp_mpi_${APPROACH_NAME}_${VERSION_NAME} ${MAIN_SOURCE_FILES})
+        target_link_libraries(nbody_openmp_mpi_${APPROACH_NAME}_${VERSION_NAME} nbody_openmp_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib)
+        set_target_properties(nbody_openmp_mpi_${APPROACH_NAME}_${VERSION_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+        list(APPEND IMPLEMENTATION_LIBS_TO_TEST
+            nbody_openmp_mpi_${APPROACH_NAME}_${VERSION_NAME}_lib
+        )
+
+        # LIST OF TESTS TO RUN FOR EACH IMPLEMENTATION
         file(READ ${VERSION}/tests TEST_NAMES)
 
         list (APPEND LIB_TEST
@@ -240,13 +335,39 @@ foreach(IMPL_LIBS IN ZIP_LISTS IMPLEMENTATION_LIBS_TO_TEST LIB_TEST)
         add_executable(${IMPL_LIBS_0}_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
         target_link_libraries(${IMPL_LIBS_0}_test ${IMPL_LIBS_0} nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
         set_target_properties(${IMPL_LIBS_0}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
-        add_test(NAME ${IMPL_LIBS_0}_test COMMAND bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
+        
+        string(REGEX MATCH "^(.*)mpi(.*)$" MPI_APPROACH ${IMPL_LIBS_0})
+
+        # CONFIGURE MPI TESTS MANUALLY TO LAUNCH IT VIA MPIRUN
+        if (NOT ${MPI_APPROACH} STREQUAL "")
+            add_test(
+                NAME ${IMPL_LIBS_0}_test
+                COMMAND mpirun -np 5 ${CMAKE_CURRENT_BINARY_DIR}/bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
+
+            set_property(TEST ${IMPL_LIBS_0}_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1") 
+        else()
+            add_test(NAME ${IMPL_LIBS_0}_test COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
+        endif()
+    
     elseif (NOT ${BARNES_HUT_APPROACH} STREQUAL "")
         # CONFIGURE AND BUILD BRUTE FORCE TESTS
         add_executable(${IMPL_LIBS_0}_test ${BARNES_HUT_TESTS_SOURCE_FILES})
         target_link_libraries(${IMPL_LIBS_0}_test ${IMPL_LIBS_0} nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
         set_target_properties(${IMPL_LIBS_0}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
-        add_test(NAME ${IMPL_LIBS_0}_test COMMAND bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
+
+        string(REGEX MATCH "^(.*)mpi(.*)$" MPI_APPROACH ${IMPL_LIBS_0})
+
+        # CONFIGURE MPI TESTS MANUALLY TO LAUNCH IT VIA MPIRUN
+        if (NOT ${MPI_APPROACH} STREQUAL "")
+            add_test(
+                NAME ${IMPL_LIBS_0}_test
+                COMMAND mpirun -np 5 ${CMAKE_CURRENT_BINARY_DIR}/bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
+
+            set_property(TEST ${IMPL_LIBS_0}_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1") 
+        else()
+            add_test(NAME ${IMPL_LIBS_0}_test COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
+        endif()
+
     endif ()
 
     string(REPLACE "-" ";" TEST_LIST ${IMPL_LIBS_1})

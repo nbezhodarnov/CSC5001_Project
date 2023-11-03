@@ -3,7 +3,6 @@
 **
 **/
 
-// #include "nbody_functions.h"
 
 #ifdef DISPLAY
 #include "utils/ui/ui.h"
@@ -14,8 +13,6 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-
-FILE *f_out = NULL;
 
 int nparticles = 500; /* number of particles */
 float T_FINAL = 1.0;  /* simulation end time */

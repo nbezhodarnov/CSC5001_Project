@@ -34,17 +34,12 @@ node_t *root;
 
 extern bool display_enabled;
 
-void init_tools(int argc, char **argv)
-{
-  // Nothing to do
-}
-
 void insert_all_particles(int nparticles, particle_t *particles, node_t *root);
 
 void init(int argc, char **argv)
 {
   parse_args(argc, argv);
-
+  
   init_alloc(8 * nparticles);
   root = malloc(sizeof(node_t));
   init_node(root, NULL, XMIN, XMAX, YMIN, YMAX);
@@ -96,14 +91,24 @@ void compute_force_on_particle(node_t *n, particle_t *p)
   {
     /* There are multiple particles */
 
-    omp_get_max_task_priority();
-
 #define THRESHOLD 2
     double size = n->x_max - n->x_min; // width of n
     double diff_x = n->x_center - p->x_pos;
     double diff_y = n->y_center - p->y_pos;
     double distance = sqrt(diff_x * diff_x + diff_y * diff_y);
 
+#if BRUTE_FORCE
+    /*
+      Run the procedure recursively on each of the current
+      node's children.
+      --> This result in a brute-force computation (complexity: O(n*n))
+    */
+    int i;
+    for (i = 0; i < 4; i++)
+    {
+      compute_force_on_particle(&n->children[i], p);
+    }
+#else
     /* Use the Barnes-Hut algorithm to get an approximation */
     if (size / distance < THRESHOLD)
     {
@@ -124,6 +129,7 @@ void compute_force_on_particle(node_t *n, particle_t *p)
         compute_force_on_particle(&n->children[i], p);
       }
     }
+#endif
   }
 }
 
@@ -213,14 +219,54 @@ void move_particles_in_node(node_t *n, double step, node_t *new_root)
 */
 void all_move_particles(double step)
 {
-  /* First calculate force for particles. */
-  compute_force_in_node(root);
-
   node_t *new_root = alloc_node();
   init_node(new_root, NULL, XMIN, XMAX, YMIN, YMAX);
 
+/* First calculate force for particles. */
+#pragma omp parallel for schedule(dynamic)
+  for (int i = 0; i < nparticles; i++)
+  {
+    particles[i].x_force = 0;
+    particles[i].y_force = 0;
+
+    compute_force_on_particle(root, &particles[i]);
+  }
+
   /* then move all particles and return statistics */
-  move_particles_in_node(root, step, new_root);
+  for (int i = 0; i < nparticles; i++)
+  {
+    particle_t *p = &particles[i];
+    assert(p->node != NULL);
+    p->x_pos += (p->x_vel) * step;
+    p->y_pos += (p->y_vel) * step;
+    double x_acc = p->x_force / p->mass;
+    double y_acc = p->y_force / p->mass;
+    p->x_vel += x_acc * step;
+    p->y_vel += y_acc * step;
+
+    /* compute statistics */
+    double cur_acc = (x_acc * x_acc + y_acc * y_acc);
+    cur_acc = sqrt(cur_acc);
+    double speed_sq = (p->x_vel) * (p->x_vel) + (p->y_vel) * (p->y_vel);
+    double cur_speed = sqrt(speed_sq);
+
+    sum_speed_sq += speed_sq;
+    max_acc = MAX(max_acc, cur_acc);
+    max_speed = MAX(max_speed, cur_speed);
+
+    p->node = NULL;
+    if (p->x_pos < new_root->x_min ||
+        p->x_pos > new_root->x_max ||
+        p->y_pos < new_root->y_min ||
+        p->y_pos > new_root->y_max)
+    {
+      nparticles--;
+    }
+    else
+    {
+      insert_particle(p, new_root);
+    }
+  }
 
   free_node(root);
   root = new_root;
@@ -248,6 +294,7 @@ void run_simulation()
   {
     /* Update time. */
     t += dt;
+
     /* Move particles with the current and compute rms velocity. */
     all_move_particles(dt);
 
@@ -280,18 +327,8 @@ void insert_all_particles(int nparticles, particle_t *particles, node_t *root)
   }
 }
 
-void free_memory()
-{
-  free(particles);
-  free_node(root);
-}
-
-void finalize_tools()
-{
-  // Nothing to do
-}
-
-void finalize()
-{
-  free_memory();
-}
+// For compatibility with the other implementations
+void init_tools(int argc, char **argv) {}
+void finalize_tools() {}
+void finalize() {}
+void free_memory() {}

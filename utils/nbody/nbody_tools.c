@@ -90,6 +90,33 @@ void print_particles(FILE *f, node_t *n)
 }
 #endif
 
+/* Parse command line arguments */
+void parse_args(int argc, char **argv)
+{
+  if (argc < 2)
+  {
+    fprintf(stderr, "Usage: %s <number of particles>\n", argv[0]);
+    exit(1);
+  }
+
+  nparticles = atoi(argv[1]);
+  if (nparticles <= 0)
+  {
+    fprintf(stderr, "Invalid number of particles\n");
+    exit(1);
+  }
+
+  if (argc == 2)
+    return;
+
+  T_FINAL = atof(argv[2]);
+  if (T_FINAL <= 0)
+  {
+    fprintf(stderr, "Invalid time\n");
+    exit(1);
+  }
+}
+
 /* Initialize a node */
 void init_node(node_t *n, node_t *parent, double x_min, double x_max, double y_min, double y_max)
 {
@@ -164,7 +191,7 @@ int get_quadrant(particle_t *particle, node_t *node)
   }
 }
 
-/* inserts a particle in a node (or one of its children)  */
+/* inserts a particle in a node (or one of its children) */
 void insert_particle(particle_t *particle, node_t *node)
 {
   if (node->n_particles == 0 &&
@@ -268,7 +295,7 @@ void init_alloc(int nb_blocks)
 /* allocate a block of 4 nodes */
 node_t *alloc_node()
 {
-  node_t *ret = mem_alloc(&mem_node);
+  node_t *ret = (node_t *) mem_alloc(&mem_node);
   return ret;
 }
 

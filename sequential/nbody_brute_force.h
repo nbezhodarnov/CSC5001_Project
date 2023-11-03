@@ -18,7 +18,9 @@ extern double sum_speed_sq;
 extern double max_acc;
 extern double max_speed;
 
-void init();
+void init_tools(int argc, char **argv);
+
+void init(int argc, char **argv);
 
 /* compute the force that a particle with position (x_pos, y_pos) and mass 'mass'
  * applies to particle p
@@ -45,5 +47,11 @@ void dump_particles(FILE *f);
 #endif
 
 void run_simulation();
+
+void free_memory();
+
+void finalize_tools();
+
+void finalize();
 
 #endif

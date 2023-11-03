@@ -15,10 +15,27 @@ void draw_node(node_t *n);
 #endif
 
 #ifdef DUMP_RESULT
-void print_all_particles(FILE *f);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+  void print_all_particles(FILE *f);
+#ifdef __cplusplus
+}
+#endif
 
 /* print recursively the particles of a node */
 void print_particles(FILE *f, node_t *n);
+#endif
+
+/* Parse command line arguments */
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+void parse_args(int argc, char **argv);
+#ifdef __cplusplus
+}
 #endif
 
 /* Initialize a node */
@@ -35,7 +52,14 @@ void insert_particle(particle_t *particle, node_t *node);
 /*
   Place particles in their initial positions.
 */
-void all_init_particles(int num_particles, particle_t *particles);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+  void all_init_particles(int num_particles, particle_t *particles);
+#ifdef __cplusplus
+}
+#endif
 
 void init_alloc(int nb_blocks);
 

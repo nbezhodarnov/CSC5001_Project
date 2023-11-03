@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 extern int nparticles; /* number of particles */
+int nparticles_valid = 10;
 extern float T_FINAL; /* simulation end time */
 particle_t *particles_valid;
 
@@ -29,18 +30,21 @@ double max_speed_valid = 0;
 
 node_t *root_valid;
 
-void insert_all_particles_valid(int nparticles, particle_t *particles, node_t *root);
+void insert_all_particles_valid(int particles_number, particle_t *particles, node_t *root);
 
-void init_valid()
+void init_valid(int argc, char **argv)
 {
-  init_alloc(8 * nparticles);
+  parse_args(argc, argv);
+  nparticles_valid = nparticles;
+
+  init_alloc(8 * nparticles_valid);
   root_valid = malloc(sizeof(node_t));
   init_node(root_valid, NULL, XMIN, XMAX, YMIN, YMAX);
 
   /* Allocate global shared arrays for the particles data set. */
-  particles_valid = malloc(sizeof(particle_t) * nparticles);
-  all_init_particles(nparticles, particles_valid);
-  insert_all_particles_valid(nparticles, particles_valid, root_valid);
+  particles_valid = malloc(sizeof(particle_t) * nparticles_valid);
+  all_init_particles(nparticles_valid, particles_valid);
+  insert_all_particles_valid(nparticles_valid, particles_valid, root_valid);
 }
 
 /* compute the force that a particle with position (x_pos, y_pos) and mass 'mass'
@@ -90,18 +94,6 @@ void compute_force_on_particle_valid(node_t *n, particle_t *p)
     double diff_y = n->y_center - p->y_pos;
     double distance = sqrt(diff_x * diff_x + diff_y * diff_y);
 
-#if BRUTE_FORCE
-    /*
-      Run the procedure recursively on each of the current
-      node's children.
-      --> This result in a brute-force computation (complexity: O(n*n))
-    */
-    int i;
-    for (i = 0; i < 4; i++)
-    {
-      compute_force_on_particle_valid(&n->children[i], p);
-    }
-#else
     /* Use the Barnes-Hut algorithm to get an approximation */
     if (size / distance < THRESHOLD)
     {
@@ -122,7 +114,6 @@ void compute_force_on_particle_valid(node_t *n, particle_t *p)
         compute_force_on_particle_valid(&n->children[i], p);
       }
     }
-#endif
   }
 }
 
@@ -175,7 +166,7 @@ void move_particle_valid(particle_t *p, double step, node_t *new_root)
       p->y_pos < new_root->y_min ||
       p->y_pos > new_root->y_max)
   {
-    nparticles--;
+    nparticles_valid--;
   }
   else
   {
@@ -229,7 +220,7 @@ void run_simulation_valid()
 {
   double t = 0.0, dt = 0.01;
 
-  while (t < T_FINAL && nparticles > 0)
+  while (t < T_FINAL && nparticles_valid > 0)
   {
     /* Update time. */
     t += dt;
@@ -245,11 +236,22 @@ void run_simulation_valid()
 }
 
 /* create a quad-tree from an array of particles */
-void insert_all_particles_valid(int nparticles, particle_t *particles, node_t *root)
+void insert_all_particles_valid(int particles_number, particle_t *particles, node_t *root)
 {
   int i;
-  for (i = 0; i < nparticles; i++)
+  for (i = 0; i < particles_number; i++)
   {
     insert_particle(&particles[i], root);
   }
+}
+
+void free_memory_valid()
+{
+  free(particles_valid);
+  free_node(root_valid);
+}
+
+void finalize_valid()
+{
+  free_memory_valid();
 }

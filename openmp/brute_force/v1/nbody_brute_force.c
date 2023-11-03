@@ -5,6 +5,8 @@
 
 #include "nbody_functions.h"
 
+#include <mpi/mpi.h>
+
 #ifdef DISPLAY
 #include "utils/ui/ui.h"
 #endif
@@ -30,15 +32,10 @@ double max_speed = 0;
 
 extern bool display_enabled;
 
-void init_tools(int argc, char **argv)
-{
-  // Nothing to do
-}
-
 void init(int argc, char **argv)
 {
   parse_args(argc, argv);
-
+  
   /* Allocate global shared arrays for the particles data set. */
   particles = malloc(sizeof(particle_t) * nparticles);
   all_init_particles(nparticles, particles);
@@ -62,32 +59,6 @@ void compute_force(particle_t *p, double x_pos, double y_pos, double mass)
   p->y_force += grav_base * y_sep;
 }
 
-/* compute the new position/velocity */
-void move_particle(particle_t *p, double step)
-{
-  p->x_pos += (p->x_vel) * step;
-  p->y_pos += (p->y_vel) * step;
-  double x_acc = p->x_force / p->mass;
-  double y_acc = p->y_force / p->mass;
-  p->x_vel += x_acc * step;
-  p->y_vel += y_acc * step;
-
-  /* compute statistics */
-  double cur_acc = (x_acc * x_acc + y_acc * y_acc);
-  cur_acc = sqrt(cur_acc);
-  double speed_sq = (p->x_vel) * (p->x_vel) + (p->y_vel) * (p->y_vel);
-  double cur_speed = sqrt(speed_sq);
-
-  sum_speed_sq += speed_sq;
-  max_acc = MAX(max_acc, cur_acc);
-  max_speed = MAX(max_speed, cur_speed);
-
-  // for (int i = 0; i < nparticles; i++)
-  // {
-  //  printf("cur_acc: %f, cur_speed: %f\n", cur_acc, cur_speed);
-  // }
-}
-
 /*
   Move particles one time step.
 
@@ -97,34 +68,47 @@ void move_particle(particle_t *p, double step)
 void all_move_particles(double step)
 {
   /* First calculate force for particles. */
-  int i;
-  for (i = 0; i < nparticles; i++)
+  #pragma omp parallel
   {
-    int j;
-    particles[i].x_force = 0;
-    particles[i].y_force = 0;
-    for (j = 0; j < nparticles; j++)
+    #pragma omp for schedule(dynamic)
+    for (int i = 0; i < nparticles; i++)
     {
-      particle_t *p = &particles[j];
-      /* compute the force of particle j on particle i */
-      compute_force(&particles[i], p->x_pos, p->y_pos, p->mass);
+      particles[i].x_force = 0;
+      particles[i].y_force = 0;
+
+      for (int j = 0; j < nparticles; j++)
+      {
+        particle_t *p = &particles[j];
+        /* compute the force of particle j on particle i */
+        compute_force(&particles[i], p->x_pos, p->y_pos, p->mass);
+      }
+    }
+
+    /* then move all particles and return statistics */
+    #pragma omp for schedule(dynamic) reduction(+: sum_speed_sq) reduction(max: max_acc, max_speed)
+    for (int i = 0; i < nparticles; i++)
+    {
+      //move_particle(&particles[i], step);
+      particle_t *p = &particles[i];
+
+      p->x_pos += (p->x_vel) * step;
+      p->y_pos += (p->y_vel) * step;
+      double x_acc = p->x_force / p->mass;
+      double y_acc = p->y_force / p->mass;
+      p->x_vel += x_acc * step;
+      p->y_vel += y_acc * step;
+
+      /* compute statistics */
+      double cur_acc = (x_acc * x_acc + y_acc * y_acc);
+      cur_acc = sqrt(cur_acc);
+      double speed_sq = (p->x_vel) * (p->x_vel) + (p->y_vel) * (p->y_vel);
+      double cur_speed = sqrt(speed_sq);
+
+      sum_speed_sq += speed_sq;
+      max_acc = MAX(max_acc, cur_acc);
+      max_speed = MAX(max_speed, cur_speed);
     }
   }
-
-  // for (i = 0; i < nparticles; i++)
-  // {
-  //   printf("x_force: %f, y_force: %f\n", particles[i].x_force, particles[i].y_force);
-  // }
-
-  // printf("\n");
-
-  /* then move all particles and return statistics */
-  for (i = 0; i < nparticles; i++)
-  {
-    move_particle(&particles[i], step);
-  }
-
-  // printf("\n");
 }
 
 #if DISPLAY
@@ -157,8 +141,6 @@ void run_simulation()
 
     dt = 0.1 * max_speed / max_acc;
 
-    //printf("max_speed: %f, max_acc: %f\n", max_speed, max_acc);
-
     /* Plot the movement of the particle */
 #if DISPLAY
     if (!display_enabled)
@@ -171,17 +153,8 @@ void run_simulation()
   }
 }
 
-void free_memory()
-{
-  free(particles);
-}
-
-void finalize_tools()
-{
-  // Nothing to do
-}
-
-void finalize()
-{
-  free_memory();
-}
+// For compatibility with the other implementations
+void init_tools(int argc, char **argv) {}
+void finalize_tools() {}
+void finalize() {}
+void free_memory() {}

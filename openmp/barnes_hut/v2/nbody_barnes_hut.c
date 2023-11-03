@@ -30,21 +30,18 @@ double sum_speed_sq = 0;
 double max_acc = 0;
 double max_speed = 0;
 
+int task_count = 1;
+
 node_t *root;
 
 extern bool display_enabled;
-
-void init_tools(int argc, char **argv)
-{
-  // Nothing to do
-}
 
 void insert_all_particles(int nparticles, particle_t *particles, node_t *root);
 
 void init(int argc, char **argv)
 {
   parse_args(argc, argv);
-
+  
   init_alloc(8 * nparticles);
   root = malloc(sizeof(node_t));
   init_node(root, NULL, XMIN, XMAX, YMIN, YMAX);
@@ -96,14 +93,24 @@ void compute_force_on_particle(node_t *n, particle_t *p)
   {
     /* There are multiple particles */
 
-    omp_get_max_task_priority();
-
 #define THRESHOLD 2
     double size = n->x_max - n->x_min; // width of n
     double diff_x = n->x_center - p->x_pos;
     double diff_y = n->y_center - p->y_pos;
     double distance = sqrt(diff_x * diff_x + diff_y * diff_y);
 
+#if BRUTE_FORCE
+    /*
+      Run the procedure recursively on each of the current
+      node's children.
+      --> This result in a brute-force computation (complexity: O(n*n))
+    */
+    int i;
+    for (i = 0; i < 4; i++)
+    {
+      compute_force_on_particle(&n->children[i], p);
+    }
+#else
     /* Use the Barnes-Hut algorithm to get an approximation */
     if (size / distance < THRESHOLD)
     {
@@ -118,12 +125,13 @@ void compute_force_on_particle(node_t *n, particle_t *p)
         Otherwise, run the procedure recursively on each of the current
   node's children.
       */
-      int i;
-      for (i = 0; i < 4; i++)
+
+      for (int i = 0; i < 4; i++)
       {
         compute_force_on_particle(&n->children[i], p);
       }
     }
+#endif
   }
 }
 
@@ -139,13 +147,39 @@ void compute_force_in_node(node_t *n)
     p->y_force = 0;
     compute_force_on_particle(root, p);
   }
-  if (n->children)
+  else if (n->children)
   {
-    int i;
-    for (i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
-      compute_force_in_node(&n->children[i]);
+      int spawn = 0;
+
+      #pragma omp critical (count)
+      {
+        if (task_count < omp_get_num_threads()) {
+          task_count++;          
+          spawn = 1;
+        }
+      }
+
+      if (spawn)
+      {
+        #pragma omp task firstprivate(n, i) untied
+        {
+          compute_force_in_node(&n->children[i]);
+
+          #pragma omp critical (count)
+          {
+            task_count--;
+          }
+        }
+      }
+      else
+      {
+        compute_force_in_node(&n->children[i]);
+      }
     }
+
+    compute_force_in_node(&n->children[3]);
   }
 }
 
@@ -214,7 +248,15 @@ void move_particles_in_node(node_t *n, double step, node_t *new_root)
 void all_move_particles(double step)
 {
   /* First calculate force for particles. */
-  compute_force_in_node(root);
+  #pragma omp parallel
+  {
+    #pragma omp master
+    {
+      compute_force_in_node(root);
+    }
+  }
+
+  //printf("Time taken: %f\n", t2 - t1);
 
   node_t *new_root = alloc_node();
   init_node(new_root, NULL, XMIN, XMAX, YMIN, YMAX);
@@ -280,18 +322,8 @@ void insert_all_particles(int nparticles, particle_t *particles, node_t *root)
   }
 }
 
-void free_memory()
-{
-  free(particles);
-  free_node(root);
-}
-
-void finalize_tools()
-{
-  // Nothing to do
-}
-
-void finalize()
-{
-  free_memory();
-}
+// For compatibility with the other implementations
+void init_tools(int argc, char **argv) {}
+void finalize_tools() {}
+void finalize() {}
+void free_memory() {}

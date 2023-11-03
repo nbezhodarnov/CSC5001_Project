@@ -73,8 +73,8 @@ if (DISPLAY)
     add_definitions(-DDISPLAY)
 endif ()
 
-# LIST OF VALID (SEQUENTIAL) IMPLEMENTATIONS TO TEST
-set(VALID_IMPLEMENTATION_LIBS_TO_TEST "")
+# # LIST OF VALID (SEQUENTIAL) IMPLEMENTATIONS TO TEST
+# set(VALID_IMPLEMENTATION_LIBS_TO_TEST "")
 
 # LIST OF PARALLEL IMPLEMENTATIONS TO TEST
 set(IMPLEMENTATION_LIBS_TO_TEST "")
@@ -102,6 +102,19 @@ add_executable(nbody_seq_barnes_hut ${MAIN_SOURCE_FILES})
 target_link_libraries(nbody_seq_barnes_hut nbody_seq_barnes_hut_lib)
 set_target_properties(nbody_seq_barnes_hut PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
+
+# CONFIGURE AND BUILD CUDA VERSIONS
+file(GLOB CUDA_APPROACH_FOLDER_LIST
+    ${CMAKE_CURRENT_SOURCE_DIR}/cuda/*)
+
+foreach(CUDA_APPROACH ${CUDA_APPROACH_FOLDER_LIST})
+    if (NOT IS_DIRECTORY ${CUDA_APPROACH})
+        continue()
+    endif ()
+
+    add_subdirectory(${CUDA_APPROACH})
+    
+endforeach()
 
 # CONFIGURE AND BUILD OPENMP VERSIONS
 file(GLOB APPROACH_FOLDER_LIST
@@ -135,9 +148,9 @@ foreach(APPROACH ${APPROACH_FOLDER_LIST})
         target_link_libraries(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib)
         set_target_properties(nbody_openmp_${APPROACH_NAME}_${VERSION_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-        list(APPEND VALID_IMPLEMENTATION_LIBS_TO_TEST
-            ${APPROACH_NAME}
-        )
+        # list(APPEND VALID_IMPLEMENTATION_LIBS_TO_TEST
+        #     ${APPROACH_NAME}
+        # )
 
         list(APPEND IMPLEMENTATION_LIBS_TO_TEST
             nbody_openmp_${APPROACH_NAME}_${VERSION_NAME}_lib
@@ -151,7 +164,6 @@ foreach(APPROACH ${APPROACH_FOLDER_LIST})
 
     endforeach()
 endforeach()
-
 
 
 # CONFIGURE AND BUILD TESTS
@@ -218,30 +230,30 @@ add_library(nbody_valid_barnes_hut_lib STATIC ${COMMON_SOURCE_FILES} ${VALID_BAR
 target_include_directories(nbody_valid_barnes_hut_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(nbody_valid_barnes_hut_lib ${DEPENDS_LIBS})
 
-foreach(IMPL_LIBS IN ZIP_LISTS VALID_IMPLEMENTATION_LIBS_TO_TEST IMPLEMENTATION_LIBS_TO_TEST LIB_TEST)
+foreach(IMPL_LIBS IN ZIP_LISTS IMPLEMENTATION_LIBS_TO_TEST LIB_TEST)
 
     string(REGEX MATCH "^(.*)brute_force(.*)$" BRUTE_FORCE_APPROACH ${IMPL_LIBS_0})
     string(REGEX MATCH "^(.*)barnes_hut(.*)$" BARNES_HUT_APPROACH ${IMPL_LIBS_0})
 
     if (NOT ${BRUTE_FORCE_APPROACH} STREQUAL "")
         # CONFIGURE AND BUILD BRUTE FORCE TESTS
-        add_executable(${IMPL_LIBS_1}_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
-        target_link_libraries(${IMPL_LIBS_1}_test ${IMPL_LIBS_1} nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
-        set_target_properties(${IMPL_LIBS_1}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
-        add_test(NAME ${IMPL_LIBS_1}_test COMMAND bin/tests/${IMPL_LIBS_1}_test ${TEST_PARAMETERS})
+        add_executable(${IMPL_LIBS_0}_test ${BRUTE_FORCE_TESTS_SOURCE_FILES})
+        target_link_libraries(${IMPL_LIBS_0}_test ${IMPL_LIBS_0} nbody_valid_brute_force_lib ${TEST_DEPENDS_LIBS})
+        set_target_properties(${IMPL_LIBS_0}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
+        add_test(NAME ${IMPL_LIBS_0}_test COMMAND bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
     elseif (NOT ${BARNES_HUT_APPROACH} STREQUAL "")
         # CONFIGURE AND BUILD BRUTE FORCE TESTS
-        add_executable(${IMPL_LIBS_1}_test ${BARNES_HUT_TESTS_SOURCE_FILES})
-        target_link_libraries(${IMPL_LIBS_1}_test ${IMPL_LIBS_1} nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
-        set_target_properties(${IMPL_LIBS_1}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
-        add_test(NAME ${IMPL_LIBS_1}_test COMMAND bin/tests/${IMPL_LIBS_1}_test ${TEST_PARAMETERS})
+        add_executable(${IMPL_LIBS_0}_test ${BARNES_HUT_TESTS_SOURCE_FILES})
+        target_link_libraries(${IMPL_LIBS_0}_test ${IMPL_LIBS_0} nbody_valid_barnes_hut_lib ${TEST_DEPENDS_LIBS})
+        set_target_properties(${IMPL_LIBS_0}_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/tests)
+        add_test(NAME ${IMPL_LIBS_0}_test COMMAND bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
     endif ()
 
-    string(REPLACE "-" ";" TEST_LIST ${IMPL_LIBS_2})
+    string(REPLACE "-" ";" TEST_LIST ${IMPL_LIBS_1})
 
     foreach(TEST ${TEST_LIST})
         # REMOVE WHITESPACES
         string(STRIP ${TEST} TEST_NAME)
-        target_compile_options(${IMPL_LIBS_1}_test PRIVATE -D${TEST_NAME})
+        target_compile_options(${IMPL_LIBS_0}_test PRIVATE -D${TEST_NAME})
     endforeach()
 endforeach()

@@ -164,83 +164,6 @@ int get_quadrant(particle_t *particle, node_t *node)
   }
 }
 
-/* inserts a particle in a node (or one of its children) in thread-safe manner */
-void locking_insert_particle(particle_t *particle, node_t *node)
-{
-  #pragma omp critical
-  {
-    if (node->n_particles == 0 &&
-      node->children == NULL)
-    {
-      assert(node->children == NULL);
-
-      /* there's no particle. insert directly */
-      node->particle = particle;
-      node->n_particles++;
-
-      node->x_center = particle->x_pos;
-      node->y_center = particle->y_pos;
-      node->mass = particle->mass;
-
-      particle->node = node;
-      assert(node->children == NULL);
-      return;
-    }
-    else
-    {
-      /* There's already a particle */
-
-      if (!node->children)
-      {
-        /* there's no children yet */
-        /* create 4 children and move the already-inserted particle to one of them */
-        node->children = alloc_node();
-        double x_min = node->x_min;
-        double x_max = node->x_max;
-        double x_center = x_min + (x_max - x_min) / 2;
-
-        double y_min = node->y_min;
-        double y_max = node->y_max;
-        double y_center = y_min + (y_max - y_min) / 2;
-
-        init_node(&node->children[0], node, x_min, x_center, y_min, y_center);
-        init_node(&node->children[1], node, x_center, x_max, y_min, y_center);
-        init_node(&node->children[2], node, x_min, x_center, y_center, y_max);
-        init_node(&node->children[3], node, x_center, x_max, y_center, y_max);
-
-        /* move the already-inserted particle to one of the children */
-        particle_t *ptr = node->particle;
-        int quadrant = get_quadrant(ptr, node);
-        node->particle = NULL;
-        ptr->node = NULL;
-
-        insert_particle(ptr, &node->children[quadrant]);
-      }
-
-      /* insert the particle to one of the children */
-      int quadrant = get_quadrant(particle, node);
-      node->n_particles++;
-
-      insert_particle(particle, &node->children[quadrant]);
-
-      /* update the mass and center of the node */
-      double total_mass = 0;
-      double total_x = 0;
-      double total_y = 0;
-      int i;
-      for (i = 0; i < 4; i++)
-      {
-        total_mass += node->children[i].mass;
-        total_x += node->children[i].x_center * node->children[i].mass;
-        total_y += node->children[i].y_center * node->children[i].mass;
-      }
-      node->mass = total_mass;
-      node->x_center = total_x / total_mass;
-      node->y_center = total_y / total_mass;
-    }
-  }
-}
-
 /* inserts a particle in a node (or one of its children) */
 void insert_particle(particle_t *particle, node_t *node)
 {
@@ -345,7 +268,7 @@ void init_alloc(int nb_blocks)
 /* allocate a block of 4 nodes */
 node_t *alloc_node()
 {
-  node_t *ret = mem_alloc(&mem_node);
+  node_t *ret = (node_t *) mem_alloc(&mem_node);
   return ret;
 }
 

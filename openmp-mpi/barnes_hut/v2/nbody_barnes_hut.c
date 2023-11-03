@@ -149,6 +149,11 @@ void init(int argc, char **argv)
   init_tools(argc, argv);
 
   parse_args(argc, argv);
+
+  if (argc >= 4) {
+    omp_set_num_threads(atoi(argv[3]));
+  }
+
   nparticles_at_start = nparticles;
 
   particles_out_of_area_number = 0;

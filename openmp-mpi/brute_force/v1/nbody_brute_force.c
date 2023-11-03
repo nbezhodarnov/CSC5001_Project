@@ -125,7 +125,7 @@ void init(int argc, char **argv)
 
   parse_args(argc, argv);
 
-    if (argc >= 4) {
+  if (argc >= 4) {
     omp_set_num_threads(atoi(argv[3]));
   }
 

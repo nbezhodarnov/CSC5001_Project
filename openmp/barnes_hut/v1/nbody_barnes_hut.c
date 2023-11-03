@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#include <ompt.h>
+#include <omp.h>
 
 int nparticles = 10; /* number of particles */
 float T_FINAL = 1.0; /* simulation end time */

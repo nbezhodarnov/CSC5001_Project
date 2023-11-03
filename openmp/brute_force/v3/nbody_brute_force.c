@@ -54,59 +54,55 @@ void init(int argc, char **argv)
 void all_move_particles(double step)
 {
   /* First calculate force for particles. */
-  #pragma omp parallel
+  #pragma omp parallel for schedule(dynamic)
+  for (int i = 0; i < nparticles; i++)
   {
-    #pragma omp for schedule(dynamic)
-    for (int i = 0; i < nparticles; i++)
+    particle_t *p1 = &particles[i];
+    double new_x_force = 0;
+    double new_y_force = 0;
+
+    #pragma omp simd reduction(+:new_x_force,new_y_force)
+    for (int j = 0; j < nparticles; j++)
     {
-      particle_t *p1 = &particles[i];
-      double new_x_force = 0;
-      double new_y_force = 0;
+      particle_t *p2 = &particles[j];
 
-      #pragma omp simd reduction(+:new_x_force,new_y_force)
-      for (int j = 0; j < nparticles; j++)
-      {
-        particle_t *p2 = &particles[j];
+      // /* compute the force of particle j on particle i */
+      double x_sep = p2->x_pos - p1->x_pos;
+      double y_sep = p2->y_pos - p1->y_pos;
+      double dist_sq = MAX((x_sep * x_sep) + (y_sep * y_sep), 0.01);
 
-        // /* compute the force of particle j on particle i */
-        double x_sep = p2->x_pos - p1->x_pos;
-        double y_sep = p2->y_pos - p1->y_pos;
-        double dist_sq = MAX((x_sep * x_sep) + (y_sep * y_sep), 0.01);
+      /* Use the 2-dimensional gravity rule: F = d * (GMm/d^2) */
+      double grav_base = GRAV_CONSTANT * (p1->mass) * (p2->mass) / dist_sq;
 
-        /* Use the 2-dimensional gravity rule: F = d * (GMm/d^2) */
-        double grav_base = GRAV_CONSTANT * (p1->mass) * (p2->mass) / dist_sq;
-
-        new_x_force += grav_base * x_sep;
-        new_y_force += grav_base * y_sep;
-      }
-
-      p1->x_force = new_x_force;
-      p1->y_force = new_y_force;
+      new_x_force += grav_base * x_sep;
+      new_y_force += grav_base * y_sep;
     }
 
-    /* then move all particles and return statistics */
-    #pragma omp for schedule(dynamic) reduction(+: sum_speed_sq) reduction(max: max_acc, max_speed)
-    for (int i = 0; i < nparticles; i++)
-    {
-      particle_t *p = &particles[i];
+    p1->x_force = new_x_force;
+    p1->y_force = new_y_force;
+  }
 
-      p->x_pos += (p->x_vel) * step;
-      p->y_pos += (p->y_vel) * step;
-      double x_acc = p->x_force / p->mass;
-      double y_acc = p->y_force / p->mass;
-      p->x_vel += x_acc * step;
-      p->y_vel += y_acc * step;
+  /* then move all particles and return statistics */
+  for (int i = 0; i < nparticles; i++)
+  {
+    particle_t *p = &particles[i];
 
-      /* compute statistics */
-      double cur_acc = (x_acc * x_acc + y_acc * y_acc);
-      cur_acc = sqrt(cur_acc);
-      double speed_sq = (p->x_vel) * (p->x_vel) + (p->y_vel) * (p->y_vel);
-      double cur_speed = sqrt(speed_sq);
+    p->x_pos += (p->x_vel) * step;
+    p->y_pos += (p->y_vel) * step;
+    double x_acc = p->x_force / p->mass;
+    double y_acc = p->y_force / p->mass;
+    p->x_vel += x_acc * step;
+    p->y_vel += y_acc * step;
 
-      sum_speed_sq += speed_sq;
-      max_acc = MAX(max_acc, cur_acc);
-      max_speed = MAX(max_speed, cur_speed);
-    }
+    /* compute statistics */
+    double cur_acc = (x_acc * x_acc + y_acc * y_acc);
+    cur_acc = sqrt(cur_acc);
+    double speed_sq = (p->x_vel) * (p->x_vel) + (p->y_vel) * (p->y_vel);
+    double cur_speed = sqrt(speed_sq);
+
+    sum_speed_sq += speed_sq;
+    max_acc = MAX(max_acc, cur_acc);
+    max_speed = MAX(max_speed, cur_speed);
   }
 }
 

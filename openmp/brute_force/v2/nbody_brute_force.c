@@ -133,7 +133,7 @@ void all_move_particles(double step)
   }
 
   /* then move all particles and return statistics */
-  #pragma omp simd reduction(+: sum_speed_sq) reduction(max: max_acc, max_speed)
+  #pragma omp for schedule(dynamic) reduction(+: sum_speed_sq) reduction(max: max_acc, max_speed)
   for (int i = 0; i < nparticles; i++)
   {
     particle_t *p = &particles[i];

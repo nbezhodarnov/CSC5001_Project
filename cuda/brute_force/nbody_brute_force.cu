@@ -152,6 +152,7 @@ void all_move_particles_kernel(double step, particle_t *gpu_particles, double *g
 {
   reset_forces<<<nparticles, 1>>>(gpu_particles);
 
+  // Since we can't have more than 1024 threads per block, we need to split the blocks
   const int blocks_count = max(1, int(ceil(double(nparticles) / double(MAX_THREADS))));
 
   calculate_forces<<<dim3(nparticles, blocks_count), dim3(1, MAX_THREADS)>>>(gpu_particles);

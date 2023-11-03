@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 extern int nparticles; /* number of particles */
-extern float T_FINAL; /* simulation end time */
+extern float T_FINAL;  /* simulation end time */
 extern particle_t *particles;
 
 extern double sum_speed_sq;

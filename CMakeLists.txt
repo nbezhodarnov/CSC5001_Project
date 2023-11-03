@@ -344,7 +344,7 @@ foreach(IMPL_LIBS IN ZIP_LISTS IMPLEMENTATION_LIBS_TO_TEST LIB_TEST)
         if (NOT ${MPI_APPROACH} STREQUAL "")
             add_test(
                 NAME ${IMPL_LIBS_0}_test
-                COMMAND mpirun -np 5 ${CMAKE_CURRENT_BINARY_DIR}/bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
+                COMMAND mpirun.mpich -np 5 ${CMAKE_CURRENT_BINARY_DIR}/bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
 
             set_property(TEST ${IMPL_LIBS_0}_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1") 
         else()
@@ -363,7 +363,7 @@ foreach(IMPL_LIBS IN ZIP_LISTS IMPLEMENTATION_LIBS_TO_TEST LIB_TEST)
         if (NOT ${MPI_APPROACH} STREQUAL "")
             add_test(
                 NAME ${IMPL_LIBS_0}_test
-                COMMAND mpirun -np 5 ${CMAKE_CURRENT_BINARY_DIR}/bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
+                COMMAND mpirun.mpich -np 5 ${CMAKE_CURRENT_BINARY_DIR}/bin/tests/${IMPL_LIBS_0}_test ${TEST_PARAMETERS})
 
             set_property(TEST ${IMPL_LIBS_0}_test PROPERTY ENVIRONMENT "RDMAV_FORK_SAFE=1") 
         else()

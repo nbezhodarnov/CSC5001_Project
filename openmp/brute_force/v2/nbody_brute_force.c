@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+#include <omp.h>
+
 int nparticles = 10; /* number of particles */
 float T_FINAL = 1.0; /* simulation end time */
 particle_t *particles;
@@ -33,7 +35,11 @@ extern bool display_enabled;
 void init(int argc, char **argv)
 {
   parse_args(argc, argv);
-  
+
+  if (argc == 4) {
+    omp_set_num_threads(atoi(argv[3]));
+  }
+
   /* Allocate global shared arrays for the particles data set. */
   particles = malloc(sizeof(particle_t) * nparticles);
   all_init_particles(nparticles, particles);

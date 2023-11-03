@@ -41,7 +41,11 @@ void insert_all_particles(int nparticles, particle_t *particles, node_t *root);
 void init(int argc, char **argv)
 {
   parse_args(argc, argv);
-  
+
+  if (argc == 4) {
+    omp_set_num_threads(atoi(argv[3]));
+  }
+
   init_alloc(8 * nparticles);
   root = malloc(sizeof(node_t));
   init_node(root, NULL, XMIN, XMAX, YMIN, YMAX);

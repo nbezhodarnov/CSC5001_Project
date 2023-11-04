@@ -229,6 +229,8 @@ extern "C" void run_simulation()
                   &T_FINAL,
                   &nparticles};
 
+  // Trying to come up with an "optimal" block size to reduce number of threads we need to wait in
+  // reset_forces and all_move_particles functions
   blockSize = min(blockSize, int(ceil(double(nparticles) / double(minGridSize))));
 
   printf("New blockSize = %d\n", blockSize);

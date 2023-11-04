@@ -70,7 +70,7 @@ void create_mpi_particle_type()
   MPI_Type_commit(&mpi_particle_type);
 }
 
-void init_MPI(int argc, char **argv)
+void init_MPI(int *argc, char ***argv)
 {
   int initialized = 0;
   MPI_Initialized(&initialized);
@@ -78,7 +78,7 @@ void init_MPI(int argc, char **argv)
   if (initialized)
     return;
 
-  MPI_Init(&argc, &argv);
+  MPI_Init(argc, argv);
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -115,21 +115,21 @@ void init_local_variables(int rank, int size)
   displs[size - 1] = (size - 1) * nparticles_per_node;
 }
 
-void init_tools(int argc, char **argv)
+void init_tools(int *argc, char **argv)
 {
   init_MPI(argc, argv);
 }
 
 void insert_all_particles(int nparticles, particle_t *particles, node_t *root);
 
-void init(int argc, char **argv)
+void init(int *argc, char ***argv)
 {
   init_tools(argc, argv);
 
-  parse_args(argc, argv);
+  parse_args(*argc, *argv);
 
-  if (argc >= 4) {
-    omp_set_num_threads(atoi(argv[3]));
+  if (*argc >= 4) {
+    omp_set_num_threads(atoi(*argv[3]));
   }
 
   nparticles_at_start = nparticles;

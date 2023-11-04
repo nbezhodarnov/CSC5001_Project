@@ -38,12 +38,12 @@ extern bool display_enabled;
 
 void insert_all_particles(int nparticles, particle_t *particles, node_t *root);
 
-void init(int argc, char **argv)
+void init(int *argc, char ***argv)
 {
-  parse_args(argc, argv);
+  parse_args(*argc, *argv);
 
-  if (argc == 4) {
-    omp_set_num_threads(atoi(argv[3]));
+  if (*argc == 4) {
+    omp_set_num_threads(atoi(*argv[3]));
   }
 
   init_alloc(8 * nparticles);

@@ -21,10 +21,21 @@ void setup(void)
 {
     // First argument is unused, second is nparticles, third is T_FINAL
     int argc = 3;
-    char *argv[] = {"nbody_barnes_hut_test", "10", "3"};
+    char **argv = malloc(sizeof(char*) * 3);
+    for (int i = 0; i < 3; i++) {
+        argv[i] = malloc(sizeof(char) * 30);
+    }
+    strcpy(argv[0], "nbody_barnes_hut_test");
+    strcpy(argv[1], "10");
+    strcpy(argv[2], "3");
 
-    init(argc, argv);
+    init(&argc, &argv);
     init_valid(argc, argv);
+    
+    for (int i = 0; i < 3; i++) {
+        free(argv[i]);
+    }
+    free(argv);
 
     for (int i = 0; i < nparticles; i++)
     {
@@ -184,7 +195,7 @@ Suite *nbody_suite(void)
 
 int main(int argc, char **argv)
 {
-    init_tools(argc, argv);
+    init_tools(&argc, &argv);
 
     double number_failed;
     Suite *s;

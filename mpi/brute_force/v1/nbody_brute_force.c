@@ -67,7 +67,7 @@ void create_mpi_particle_type()
 
 void finalize_MPI();
 
-void init_MPI(int argc, char **argv)
+void init_MPI(int *argc, char ***argv)
 {
   int initialized = 0;
   MPI_Initialized(&initialized);
@@ -75,7 +75,7 @@ void init_MPI(int argc, char **argv)
   if (initialized)
     return;
 
-  MPI_Init(&argc, &argv);
+  MPI_Init(argc, argv);
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -112,16 +112,16 @@ void init_local_variables(int rank, int size)
   displs[size - 1] = (size - 1) * nparticles_per_node;
 }
 
-void init_tools(int argc, char **argv)
+void init_tools(int *argc, char ***argv)
 {
   init_MPI(argc, argv);
 }
 
-void init(int argc, char **argv)
+void init(int *argc, char ***argv)
 {
   init_tools(argc, argv);
 
-  parse_args(argc, argv);
+  parse_args(*argc, *argv);
 
   /* Allocate global shared arrays for the particles data set. */
   particles = malloc(sizeof(particle_t) * nparticles);

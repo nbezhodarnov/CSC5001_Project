@@ -73,9 +73,9 @@ static __inline__ __device__ double atomicMax(double *address, double val)
   return __longlong_as_double(old);
 }
 
-extern "C" void init(int argc, char **argv)
+extern "C" void init(int *argc, char ***argv)
 {
-  parse_args(argc, argv);
+  parse_args(*argc, *argv);
 
   /* Allocate global shared arrays for the particles data set. */
   particles = (particle_t *)malloc(sizeof(particle_t) * nparticles);
@@ -244,7 +244,7 @@ extern "C" void run_simulation()
 // For compatibility with the other implementations
 extern "C"
 {
-  void init_tools(int argc, char **argv) {}
+  void init_tools(int *argc, char ***argv) {}
   void finalize_tools() {}
   void finalize() {}
   void free_memory() {}

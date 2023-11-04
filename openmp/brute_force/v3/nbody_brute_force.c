@@ -32,12 +32,12 @@ double max_speed = 0;
 
 extern bool display_enabled;
 
-void init(int argc, char **argv)
+void init(int *argc, char ***argv)
 {
-  parse_args(argc, argv);
+  parse_args(*argc, *argv);
 
-  if (argc == 4) {
-    omp_set_num_threads(atoi(argv[3]));
+  if (*argc == 4) {
+    omp_set_num_threads(atoi(*argv[3]));
   }
 
   /* Allocate global shared arrays for the particles data set. */

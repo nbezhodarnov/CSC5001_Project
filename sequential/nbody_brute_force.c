@@ -81,11 +81,6 @@ void move_particle(particle_t *p, double step)
   sum_speed_sq += speed_sq;
   max_acc = MAX(max_acc, cur_acc);
   max_speed = MAX(max_speed, cur_speed);
-
-  // for (int i = 0; i < nparticles; i++)
-  // {
-  //  printf("cur_acc: %f, cur_speed: %f\n", cur_acc, cur_speed);
-  // }
 }
 
 /*
@@ -111,20 +106,11 @@ void all_move_particles(double step)
     }
   }
 
-  // for (i = 0; i < nparticles; i++)
-  // {
-  //   printf("x_force: %f, y_force: %f\n", particles[i].x_force, particles[i].y_force);
-  // }
-
-  // printf("\n");
-
   /* then move all particles and return statistics */
   for (i = 0; i < nparticles; i++)
   {
     move_particle(&particles[i], step);
   }
-
-  // printf("\n");
 }
 
 #if DISPLAY
@@ -156,8 +142,6 @@ void run_simulation()
        by more than 10% */
 
     dt = 0.1 * max_speed / max_acc;
-
-    //printf("max_speed: %f, max_acc: %f\n", max_speed, max_acc);
 
     /* Plot the movement of the particle */
 #if DISPLAY

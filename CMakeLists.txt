@@ -106,17 +106,7 @@ set_target_properties(nbody_seq_barnes_hut PROPERTIES RUNTIME_OUTPUT_DIRECTORY $
 
 
 # CONFIGURE AND BUILD CUDA VERSIONS
-file(GLOB CUDA_APPROACH_FOLDER_LIST
-    ${CMAKE_CURRENT_SOURCE_DIR}/cuda/*)
-
-foreach(CUDA_APPROACH ${CUDA_APPROACH_FOLDER_LIST})
-    if (NOT IS_DIRECTORY ${CUDA_APPROACH})
-        continue()
-    endif ()
-
-    add_subdirectory(${CUDA_APPROACH})
-    
-endforeach()
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/cuda)
 
 # CONFIGURE AND BUILD OPENMP VERSIONS
 file(GLOB OPENMP_APPROACH_FOLDER_LIST

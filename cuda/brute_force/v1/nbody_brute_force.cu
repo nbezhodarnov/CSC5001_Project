@@ -192,7 +192,7 @@ extern "C" void run_simulation()
 
     dt = 0.1 * max_speed / max_acc;
 
-    // printf("max_speed: %f, max_acc: %f\n", max_speed, max_acc);
+    //printf("max_speed = %lf, max_acc = %lf, dt = %lf\n", max_speed, max_acc, dt);
 
     /* Plot the movement of the particle */
 #if DISPLAY

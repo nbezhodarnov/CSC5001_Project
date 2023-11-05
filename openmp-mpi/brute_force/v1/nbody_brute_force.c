@@ -77,7 +77,13 @@ void init_MPI(int *argc, char ***argv)
   if (initialized)
     return;
 
-  MPI_Init(argc, argv);
+  int provided;
+  MPI_Init_thread(argc, argv, MPI_THREAD_MULTIPLE, &provided);
+
+  if (provided < MPI_THREAD_MULTIPLE) {
+    fprintf(stderr, "Cannot specify mpi to use threads\n");
+    exit(1);
+  }
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);

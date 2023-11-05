@@ -16,6 +16,7 @@
 
 #include <omp.h>
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -89,6 +90,8 @@ void init_MPI(int *argc, char ***argv)
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   create_mpi_particle_type();
+
+  signal(SIGPIPE, SIG_IGN);
 }
 
 void init_local_variables(int rank, int size)
